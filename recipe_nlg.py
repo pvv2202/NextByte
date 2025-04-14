@@ -4,7 +4,6 @@ import re
 
 # TODO: These need to be tokenized
 class RecipeNLGDataset(Dataset):
-    # TODO: Pass emmbedding to shift them over
     def __init__(self, df, tokenizer, mode='all'):
         self.df = df
         self.columns = self.df.columns.tolist()
@@ -39,7 +38,7 @@ class RecipeNLGDataset(Dataset):
                 self.recipe_strings = self.recipes.apply(
                     lambda row: (
                         f"{row['title'].lower()}<end_title>"
-                        f"{row['ingredients']}<end_ingredients>"
+                        f"{row['ingredients']}<end>"
                     ),
                     axis=1
                 )
@@ -52,12 +51,20 @@ class RecipeNLGDataset(Dataset):
                     axis=1
                 )
 
+        # Turn recipe strings into tokens.
+        self.tokenized_recipes = tokenizer(
+            text=self.recipe_strings.tolist(),
+            padding=True,
+            truncation=True,
+            return_tensors='pt'
+        )
+
     def __len__(self):
         return len(self.recipes)
 
     def __getitem__(self, idx):
         """Return a training sample"""
-        sample = self.recipe_strings.iloc[idx]
+        sample = self.tokenized_recipes.iloc[idx]
         return sample[:-1], sample[1:]
 
     @staticmethod
