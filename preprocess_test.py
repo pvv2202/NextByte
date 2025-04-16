@@ -1,6 +1,6 @@
 import kagglehub
 import pandas as pd
-from recipe_nlg import RecipeNLGDataset
+from recipe_nlg import RecipeNLGDataset, TokenizedRecipeNLGDataset
 
 # Download latest version
 path = kagglehub.dataset_download("paultimothymooney/recipenlg")
@@ -8,7 +8,10 @@ path = kagglehub.dataset_download("paultimothymooney/recipenlg")
 df = pd.read_csv(path + "/RecipeNLG_dataset.csv", header=0)
 
 # Create an instance of the RecipeNLGDataset class
-dataset = RecipeNLGDataset(df=df, tokenizer=None, mode='all')
+dataset = RecipeNLGDataset(df=df, mode='all')
+
+# Get columns for websites
+columns = dataset.df.columns.tolist()
 
 # Print unique values in certain columns
 print(dataset.__getitem__(0)[0])
