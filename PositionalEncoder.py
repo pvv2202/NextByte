@@ -1,6 +1,7 @@
 import torch
 import torch.nn  as nn
 import numpy as np 
+import math
 
 
 
@@ -27,14 +28,15 @@ class PositionalEncoder(nn.Module):
         # in the paper, and allows for more numerical stability, removing the need to calculate
         # exponents with 10000 as the base
         # 2i just means all the even numbers in d_model the torch.arrange below accomplishes that
-        div_term = torch.exp(-1 * (torch.arange(0, d_model, 2) / d_model) * torch.log(10000.0))
+        div_term = torch.exp(-1 * (torch.arange(0, d_model, 2) / d_model) * math.log(10000.0))
         
         # apply position * div term to every value in pe matrix, sin for even, cos for odd
         self.pe[:, 0::2] = torch.sin(position * div_term) # for each row, start at col 0 & skip 2 (even)
         self.pe[:, 1::2] = torch.cos(position * div_term) # for each row, start at col 1 and skip 2 (odd)
-        self.pe.unsqueeze(0) # add a batch dimension,  shape: (1 x context_len x d_model)
+        self.pe = self.pe.unsqueeze(0) # add a batch dimension,  shape: (1 x context_len x d_model)
+        print(self.pe.shape)
         
-        self.register_buffer('pe', self.pe) # fixes embeddings, if we want to have them learn we can change
+        #self.register_buffer('pe', self.pe) # fixes embeddings, if we want to have them learn we can change
         
     """input x should be a tensor of shape (batch_size, len_input_sequence, d_model)"""
     def forward(self, x):

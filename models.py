@@ -1,17 +1,17 @@
 import torch
-import torch.nn 
+import torch.nn as nn
 import numpy as np 
 import PositionalEncoder 
-import FFN
+from FFN import FFN
 
  
-class DecoderLayer(nn.Module):
+class DecoderBlock(nn.Module):
     
     def __init__(self, d_model, num_heads, d_hidden, num_hidden_layers):
-        super(DecoderLayer, self).__init__()
+        super(DecoderBlock, self).__init__()
         
         """masked mh attention -> add norm -> feedforward -> add norm"""
-        self.masked_mh_attention = nn.MultiHeadAttention(d_model, num_heads)
+        self.masked_mh_attention = nn.MultiheadAttention(d_model, num_heads)
         
         self.attn_mask = None # TODO: would this be a torch.tril matrix of with the upper triangle zeroed out?
         
@@ -26,7 +26,7 @@ class DecoderLayer(nn.Module):
             and an attention mask
         """
         # COULD CHANGE: decoder flow with residual connections 
-        attn_output = self.masked_mh_attention(x, x, x, attn_mask = self.attn_mask)
+        attn_output, att_weights = self.masked_mh_attention(x, x, x, attn_mask = self.attn_mask)
         residual_one = x + attn_output
         normalized = self.layer_norm(residual_one)
         ffn_output = self.ffn(normalized)
@@ -39,7 +39,7 @@ class NextByteDecoder(nn.Module):
         
         # create a module list of num_decoder DecoderLayer objects
         self.decoder_layers = nn.ModuleList([
-            DecoderLayer(d_model, num_heads, d_hidden, num_hidden_layers)
+            DecoderBlock(d_model, num_heads, d_hidden, num_hidden_layers)
             for _ in range(num_decoders)
         ])
         
