@@ -1,5 +1,5 @@
 import torch
-import torch.nn 
+import torch.nn  as nn
 import numpy as np 
 
 
@@ -21,13 +21,13 @@ class PositionalEncoder(nn.Module):
         self.dropout = nn.Dropout(p=pdrop)
         
         # create a tensor holding every possible position in the input sequence
-        position = torch.arrange(0, context_len, dtype=torch.float).unsqueeze(1) # shape: (context_len x 1)
+        position = torch.arange(0, context_len, dtype=torch.float).unsqueeze(1) # shape: (context_len x 1)
         
         # by a bunch of annoying log properties this expression is equal to the dividing term
         # in the paper, and allows for more numerical stability, removing the need to calculate
         # exponents with 10000 as the base
         # 2i just means all the even numbers in d_model the torch.arrange below accomplishes that
-        div_term = torch.exp(-1 * (torch.arrange(0, d_model, 2) / d_model) * torch.log(10000.0))
+        div_term = torch.exp(-1 * (torch.arange(0, d_model, 2) / d_model) * torch.log(10000.0))
         
         # apply position * div term to every value in pe matrix, sin for even, cos for odd
         self.pe[:, 0::2] = torch.sin(position * div_term) # for each row, start at col 0 & skip 2 (even)
