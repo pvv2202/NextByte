@@ -14,7 +14,7 @@ if __name__ == "__main__":
     # Load the dataset
     df = pd.read_csv(path + "/RecipeNLG_dataset.csv", header=0)
 
-    tokenizer_path = Path("title_to_all_tokenizer")
+    tokenizer_path = Path("title_to_ingredients_tokenizer")
 
     if tokenizer_path.exists():
         print("Loading tokenizer")
@@ -32,10 +32,10 @@ if __name__ == "__main__":
         )
 
         # Special tokens and trainer
-        special_tokens = ["[PAD]", "[UNK]", "<end_title>", "<end_ingredients>", "<end_instructions>", "<end>"]
+        special_tokens = ["[PAD]", "[UNK]", "<end_title>", "<end>"]
         trainer = trainers.WordPieceTrainer(vocab_size=20000, special_tokens=special_tokens)
 
-        string_dataset = RecipeNLGDataset(df, mode='all')
+        string_dataset = RecipeNLGDataset(df, mode='title_to_ingredients')
 
         # Train the tokenizer
         tokenizer.train_from_iterator(string_dataset, trainer=trainer)
@@ -46,27 +46,27 @@ if __name__ == "__main__":
             "pad_token": "[PAD]",
             "unk_token": "[UNK]",
             "additional_special_tokens": [
-                "<end_title>", "<end_ingredients>", "<end_instructions>", "<end>"
+                "<end_title>", "<end>"
             ]
         })
-        hf_tokenizer.save_pretrained("title_to_all_tokenizer")
+        hf_tokenizer.save_pretrained("title_to_ingredients_tokenizer")
 
-    # # Test tokenizer
-    # print("Testing tokenizer")
-    #
-    # test_string = "This is a test string"
-    #
-    # # Tokenize and encode
-    # tokenized_ids = hf_tokenizer.encode(test_string)
-    # tokens = hf_tokenizer.convert_ids_to_tokens(tokenized_ids)
-    #
-    # print("Token IDs:     ", tokenized_ids)
-    # print("Tokens:        ", tokens)
-    #
-    # # Decode to check round-trip
-    # decoded = hf_tokenizer.decode(tokenized_ids)
-    # print("Decoded string:", decoded)
-    #
-    # for token, idx in hf_tokenizer.get_vocab().items():
-    #     print(f"{idx}: {token}")
+    # Test tokenizer
+    print("Testing tokenizer")
+
+    test_string = "Chicken tikka masala"
+
+    # Tokenize and encode
+    tokenized_ids = hf_tokenizer.encode(test_string)
+    tokens = hf_tokenizer.convert_ids_to_tokens(tokenized_ids)
+
+    print("Token IDs:     ", tokenized_ids)
+    print("Tokens:        ", tokens)
+
+    # Decode to check round-trip
+    decoded = hf_tokenizer.decode(tokenized_ids)
+    print("Decoded string:", decoded)
+
+    for token, idx in hf_tokenizer.get_vocab().items():
+        print(f"{idx}: {token}")
 

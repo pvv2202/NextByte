@@ -63,7 +63,7 @@ class TokenizedRecipeNLGDataset(Dataset):
 
     def __getitem__(self, idx):
         """Return a training sample"""
-        sample = self.tokenized_recipes.iloc[idx]
+        sample = self.tokenized_recipes[idx]
         return sample[:-1], sample[1:]
 
     @staticmethod

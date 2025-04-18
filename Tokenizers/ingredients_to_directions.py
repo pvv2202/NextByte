@@ -51,22 +51,22 @@ if __name__ == "__main__":
         })
         hf_tokenizer.save_pretrained("ingredients_to_directions_tokenizer")
 
-    # # Test tokenizer
-    # print("Testing tokenizer")
-    #
-    # test_string = "This is a test string"
-    #
-    # # Tokenize and encode
-    # tokenized_ids = hf_tokenizer.encode(test_string)
-    # tokens = hf_tokenizer.convert_ids_to_tokens(tokenized_ids)
-    #
-    # print("Token IDs:     ", tokenized_ids)
-    # print("Tokens:        ", tokens)
-    #
-    # # Decode to check round-trip
-    # decoded = hf_tokenizer.decode(tokenized_ids)
-    # print("Decoded string:", decoded)
-    #
-    # for token, idx in hf_tokenizer.get_vocab().items():
-    #     print(f"{idx}: {token}")
+    # Test tokenizer
+    print("Testing tokenizer")
+
+    test_string = "Chicken tikka masala"
+
+    # Tokenize and encode
+    tokenized_ids = hf_tokenizer.encode(test_string)
+    tokens = hf_tokenizer.convert_ids_to_tokens(tokenized_ids)
+
+    print("Token IDs:     ", tokenized_ids)
+    print("Tokens:        ", tokens)
+
+    # Decode to check round-trip
+    decoded = hf_tokenizer.decode(tokenized_ids)
+    print("Decoded string:", decoded)
+
+    for token, idx in hf_tokenizer.get_vocab().items():
+        print(f"{idx}: {token}")
 

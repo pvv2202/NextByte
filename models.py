@@ -2,8 +2,6 @@ import torch
 import torch.nn 
 import numpy as np 
 
-
-
 class PositionalEncoder(nn.Module):
     """PARAMS:
     
