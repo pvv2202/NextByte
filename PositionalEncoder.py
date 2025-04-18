@@ -34,7 +34,6 @@ class PositionalEncoder(nn.Module):
         self.pe[:, 0::2] = torch.sin(position * div_term) # for each row, start at col 0 & skip 2 (even)
         self.pe[:, 1::2] = torch.cos(position * div_term) # for each row, start at col 1 and skip 2 (odd)
         self.pe = self.pe.unsqueeze(0) # add a batch dimension,  shape: (1 x context_len x d_model)
-        print(self.pe.shape)
         
         #self.register_buffer('pe', self.pe) # fixes embeddings, if we want to have them learn we can change
         

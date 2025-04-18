@@ -2,12 +2,16 @@ import torch
 import torch.nn as nn
 import numpy as np 
 
-
+"""-- CAN ADD: dropout at the end -- """
 class FFN(nn.Module):
     """PARAMS
+       
        d_input (int): size of embeddings
+       
        d_output (int): should be the same as d_input for a decoder transformer
+       
        num_hidden_layers (int) OPTIONAL : number of hidden layers in feedforward network
+       
        d_hidden (int) OPTIONAL : number of nodes in each hidden layer
        
     """
