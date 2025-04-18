@@ -1,52 +1,74 @@
 import torch
-import torch.nn 
+import torch.nn as nn
 import numpy as np 
+import PositionalEncoder 
+from FFN import FFN
 
-class PositionalEncoder(nn.Module):
-    """PARAMS:
+ 
+class DecoderBlock(nn.Module):
     
-        context length (int): the max number of tokens the model can process at once
+    def __init__(self, d_model, num_heads, d_hidden, num_hidden_layers):
+        super(DecoderBlock, self).__init__()
         
-        d_model (int): length of a token's embedding vector, referred to generally as the 'model dimension'
+        """masked mh attention -> add norm -> feedforward -> add norm"""
+        self.masked_mh_attention = nn.MultiheadAttention(d_model, num_heads)
         
-        pdrop, float (Optional): probability of zeroing out an input, default to 0.1
-    """
-    def __init__(self, context_len, d_model, pdrop=0.1):
-        super.__init__()
-        # encode each position (context_len) with d_model dimensions
-        self.pe = torch.zeros(context_len, d_model) # shape: (context_len x d_model) 
+        self.attn_mask = None # TODO: would this be a torch.tril matrix of with the upper triangle zeroed out?
         
-        self.dropout = nn.Dropout(p=pdrop)
+        # layer norm applies to each embedding vector individual, so it needs the size of those vectors (d_model)
+        self.layer_norm = nn.LayerNorm(d_model)
         
-        # create a tensor holding every possible position in the input sequence
-        position = torch.arrange(0, context_len, dtype=torch.float).unsqueeze(1) # shape: (context_len x 1)
+        self.ffn = FFN(d_input=d_model, d_output=d_model, d_hidden=d_hidden, num_hidden_layers=num_hidden_layers) # feed forward
         
-        # by a bunch of annoying log properties this expression is equal to the dividing term
-        # in the paper, and allows for more numerical stability, removing the need to calculate
-        # exponents with 10000 as the base
-        # 2i just means all the even numbers in d_model the torch.arrange below accomplishes that
-        div_term = torch.exp(-1 * (torch.arrange(0, d_model, 2) / d_model) * torch.log(10000.0))
-        
-        # apply position * div term to every value in pe matrix, sin for even, cos for odd
-        self.pe[:, 0::2] = torch.sin(position * div_term) # for each row, start at col 0 & skip 2 (even)
-        self.pe[:, 1::2] = torch.cos(position * div_term) # for each row, start at col 1 and skip 2 (odd)
-        self.pe.unsqueeze(0) # add a batch dimension,  shape: (1 x context_len x d_model)
-        
-        self.register_buffer('pe', self.pe) # fixes embeddings, if we want to have them learn we can change
-        
-    """input x should be a tensor of shape (batch_size, len_input_sequence, d_model)"""
+
     def forward(self, x):
-        # you slice x.shape(1) rows out of the positional encoding matrix to match the length of the input
-        # sequence explicitly, used in case input sequence length != context_len. I don't think this would 
-        # matter if we pad inputs to max length, but this should help if we decide not to
-        x = x + (self.pe[:, :x.shape[1], :]) 
+        """ forward method of a mhattention object needs q, k, v (it handles the projection of the inputs),
+            and an attention mask
+        """
+        # COULD CHANGE: decoder flow with residual connections 
+        attn_output, att_weights = self.masked_mh_attention(x, x, x, attn_mask = self.attn_mask)
+        residual_one = x + attn_output
+        normalized = self.layer_norm(residual_one)
+        ffn_output = self.ffn(normalized)
+        out = residual_one + ffn_output
         
-        # apply dropout to help with overfitting and return
-        return self.dropout(x)
-        
+        return out
     
-
+class NextByteDecoder(nn.Module):
+    def __init__(self, num_heads, num_hidden_layers, num_decoders, d_model, d_hidden):
+        
+        # create a module list of num_decoder DecoderLayer objects
+        self.decoder_layers = nn.ModuleList([
+            DecoderBlock(d_model, num_heads, d_hidden, num_hidden_layers)
+            for _ in range(num_decoders)
+        ])
+        
+        # OPTIONAL
+        self.layer_norm = nn.LayerNorm(d_model)
+        
+    def forward(self, x):
+        # pass the input through every decoder layer
+        for layer in self.decoder_layers:
+            x = layer(x)
+        
+        # optional: return the output after layer normalization  
+        return self.layer_norm(x)
+        
+        
 class NextByteTransformer(nn.Module):
-    def __init__(self, vocab_size, d_model, hidden_layers, context_length):
-        super.__init__()
-        pass 
+    """there are probably more hyper params to add here"""
+    def __init__(self, vocab_size, context_length, d_model, d_hidden, num_hidden_layers, num_heads, num_decoders):
+        super(NextByteTransformer, self).__init__()
+        # create the simple embedding layer
+        self.emmbedding_layer = nn.Embedding(vocab_size, d_model)
+        self.positional_encoder_layer = PositionalEncoder(context_length, d_model)
+        
+        # decoder block with masked MHattention + add/norm + ffn 
+        self.decoder = NextByteDecoder(
+            d_model=d_model,
+            d_hidden=d_hidden,
+            num_heads=num_heads,
+            num_hidden_layers=num_hidden_layers,
+            num_decoders=num_decoders
+        )
+        self.linear = nn.Linear()
