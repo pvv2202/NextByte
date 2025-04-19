@@ -1,5 +1,6 @@
 import torch
 from models import DecoderBlock, NextByteDecoder, NextByteTransformer
+from pathlib import Path
 
 d_model = 66
 context_length = 512
@@ -21,5 +22,5 @@ next_byte = NextByteTransformer(
 x = next_byte(test_input)
 # should output (batch x context x vocab)
 # a unormalized probabilities of next word (vocab_size options) for every token in the context
-print(x.shape)
+print(x[1][0].shape)
 
