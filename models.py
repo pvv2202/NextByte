@@ -76,7 +76,7 @@ class NextByteTransformer(nn.Module):
             num_decoders=num_decoders
         )
         # final output projection to all tokens in vocab
-        self.to_logits = nn.Linear(d_model, vocab_size)
+        self.to_logits = self.emmbedding_layer.T
         
     def forward(self, x):
         input_key_mask = x == 0
