@@ -22,5 +22,5 @@ next_byte = NextByteTransformer(
 x = next_byte(test_input)
 # should output (batch x context x vocab)
 # a unormalized probabilities of next word (vocab_size options) for every token in the context
-print(x[1][0].shape)
+print(x.shape)
 
