@@ -15,7 +15,7 @@ next_byte = NextByteTransformer(
     context_length=context_length,
     num_heads=2, 
     num_hidden_layers=2, 
-    d_hidden=2048, 
+    d_hidden=2828, 
     num_decoders=6)
 
 
