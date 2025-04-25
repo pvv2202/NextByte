@@ -7,6 +7,7 @@ class TokenizedRecipeNLGDataset(Dataset):
     def __init__(self, df, tokenizer, mode='all'):
         self.df = df
         self.columns = self.df.columns.tolist()
+        self.tokenizer = tokenizer
 
         # Get only relevant columns
         self.recipes = self.df[['title', 'ingredients', 'directions']].map(self.clean_text)
@@ -51,20 +52,20 @@ class TokenizedRecipeNLGDataset(Dataset):
                     axis=1
                 )
 
-        self.tokenized_recipes = tokenizer(
-            text=self.recipe_strings.tolist(),
-            padding=True,
-            truncation=True,
-            return_tensors='pt'
-        )
-
     def __len__(self):
         return len(self.recipes)
 
     def __getitem__(self, idx):
         """Return a training sample"""
-        sample = self.tokenized_recipes[idx]
-        return sample[:-1], sample[1:]
+        sample = self.recipe_strings.iloc[idx]
+        tokens = self.tokenizer(
+            text=sample,
+            padding='max_length',
+            truncation=True,
+            return_tensors='pt'
+        )['input_ids'].squeeze()
+
+        return tokens[:-1], tokens[1:]
 
     @staticmethod
     def clean_text(text):

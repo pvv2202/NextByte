@@ -16,8 +16,8 @@ next_byte = NextByteTransformer(
     num_heads=2, 
     num_hidden_layers=2, 
     d_hidden=2048, 
-    num_decoders=6)
-
+    num_decoders=6
+)
 
 x = next_byte(test_input)
 # should output (batch x context x vocab)
