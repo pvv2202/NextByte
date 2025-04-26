@@ -9,7 +9,7 @@ class DecoderBlock(nn.Module):
     
     def __init__(self, d_model, num_heads, d_hidden, num_hidden_layers):
         super(DecoderBlock, self).__init__()
-        
+
         """masked mh attention -> add norm -> feedforward -> add norm"""
         self.masked_mh_attention = nn.MultiheadAttention(d_model, num_heads, batch_first=True) # can add dropout here if we want
         
@@ -26,10 +26,9 @@ class DecoderBlock(nn.Module):
         b, c, d = x.shape
         # context x context mask, upper triangle values set to true, which 
         # tells model to ignore those positions so it cannot cheat.
-        mask = torch.triu(torch.ones(c,c), 1).bool()
+        mask = torch.triu(torch.ones(c, c, device=x.device), 1).bool()
 
-        
-        # COULD CHANGE: decoder flow with residual connections 
+        # COULD CHANGE: decoder flow with residual connections
         attn_output, att_weights = self.masked_mh_attention(x, x, x, attn_mask = mask, key_padding_mask=padding_mask)
         residual_one = x + attn_output
         normalized = self.layer_norm(residual_one)

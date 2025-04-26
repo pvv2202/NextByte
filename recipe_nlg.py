@@ -1,6 +1,7 @@
 import pandas as pd
-from torch.utils.data import Dataset, DataLoader, random_split
+import torch
 import re
+from torch.utils.data import Dataset, DataLoader, random_split
 
 class TokenizedRecipeNLGDataset(Dataset):
     """Dataset for the Tokenized RecipeNLG dataset"""
@@ -8,6 +9,8 @@ class TokenizedRecipeNLGDataset(Dataset):
         self.df = df
         self.columns = self.df.columns.tolist()
         self.tokenizer = tokenizer
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        print(f"RECIPE DEVICE: {self.device}")
 
         # Get only relevant columns
         self.recipes = self.df[['title', 'ingredients', 'directions']].map(self.clean_text)
@@ -64,7 +67,7 @@ class TokenizedRecipeNLGDataset(Dataset):
             max_length = 512,
             truncation=True,
             return_tensors='pt'
-        )['input_ids'].squeeze(0) # remove batch dimension
+        )['input_ids'].squeeze(0).to(self.device) # remove batch dimension
 
         # inputs, labels
         return {

@@ -17,7 +17,7 @@ class PositionalEncoder(nn.Module):
     def __init__(self, context_len, d_model, pdrop=0.1):
         super(PositionalEncoder, self).__init__()
         # encode each position (context_len) with d_model dimensions
-        self.pe = torch.zeros(context_len, d_model) # shape: (context_len x d_model) 
+        pe = torch.zeros(context_len, d_model) # shape: (context_len x d_model)
         
         self.dropout = nn.Dropout(p=pdrop)
         
@@ -31,18 +31,18 @@ class PositionalEncoder(nn.Module):
         div_term = torch.exp(-1 * (torch.arange(0, d_model, 2) / d_model) * math.log(10000.0))
         
         # apply position * div term to every value in pe matrix, sin for even, cos for odd
-        self.pe[:, 0::2] = torch.sin(position * div_term) # for each row, start at col 0 & skip 2 (even)
-        self.pe[:, 1::2] = torch.cos(position * div_term) # for each row, start at col 1 and skip 2 (odd)
-        self.pe = self.pe.unsqueeze(0) # add a batch dimension,  shape: (1 x context_len x d_model)
-        
-        #self.register_buffer('pe', self.pe) # fixes embeddings, if we want to have them learn we can change
+        pe[:, 0::2] = torch.sin(position * div_term) # for each row, start at col 0 & skip 2 (even)
+        pe[:, 1::2] = torch.cos(position * div_term) # for each row, start at col 1 and skip 2 (odd)
+        pe = pe.unsqueeze(0) # add a batch dimension,  shape: (1 x context_len x d_model)
+
+        self.register_buffer('pe', pe) # fixes embeddings, if we want to have them learn we can change
         
     """input x should be a tensor of shape (batch_size, len_input_sequence, d_model)"""
     def forward(self, x):
         # you slice x.shape(1) rows out of the positional encoding matrix to match the length of the input
         # sequence explicitly, used in case input sequence length != context_len. I don't think this would 
         # matter if we pad inputs to max length, but this should help if we decide not to
-        x = x + (self.pe[:, :x.shape[1], :]) 
+        x = x + (self.pe[:, :x.shape[1], :]).to(x.device)
         
         # apply dropout to help with overfitting and return
         return self.dropout(x)
