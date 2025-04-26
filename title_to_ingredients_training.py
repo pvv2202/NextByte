@@ -42,7 +42,6 @@ print('loading df..')
 path = kagglehub.dataset_download("paultimothymooney/recipenlg")
 # Load the dataset
 df = pd.read_csv(path + "/RecipeNLG_dataset.csv", header=0)
-df = df[:100]
 
 print('splitting into train and test sets')
 # data split into 70% train, & 15% each for eval and testing
@@ -89,7 +88,6 @@ lr_scheduler = get_scheduler(
     num_warmup_steps=0,
     num_training_steps=num_training_steps
 )
-
 
 def evaluate_model(model, dataloader, device):
     """Takes the model and a dataset. Evaluates the model on the dataset, printing out overall accuracy."""

@@ -42,7 +42,6 @@ print('loading df..')
 path = kagglehub.dataset_download("paultimothymooney/recipenlg")
 # Load the dataset
 df = pd.read_csv(path + "/RecipeNLG_dataset.csv", header=0)
-df = df[:100]
 
 print('splitting into train and test sets')
 # data split into 70% train, & 15% each for eval and testing
@@ -117,7 +116,6 @@ def evaluate_model(model, dataloader, device):
     acc = metric.compute()
 
     return f1, acc, avg_loss
-
 
 results = {
     'train_acc': [],
