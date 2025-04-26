@@ -1,3 +1,4 @@
+from random import shuffle
 import torch
 import kagglehub
 import torch.nn as nn
@@ -20,8 +21,8 @@ d_model = 512
 num_heads = 8
 num_hidden_layers = 2
 d_hidden = 2048
-num_decoders = 8
-num_epochs = 15
+num_decoders = 2
+num_epochs = 1
 lr = 3e-5
 batch_size = 16
 
@@ -45,11 +46,14 @@ df = df[:100]
 print(len(df))
 
 print('splitting into train and test sets')
-train_df, eval_df = train_test_split(df, test_size=0.2)
+# data split into 70% train, & 15% each for eval and testing
+train_df, temp_df = train_test_split(df, test_size=0.3, random_state=42)
+eval_df, test_df = train_test_split(temp_df, 0.5, random_state=42)
 
 print('creating datasets..')
 train_dataset = TokenizedRecipeNLGDataset(df=train_df, tokenizer=tokenizer, mode='all')
 eval_dataset = TokenizedRecipeNLGDataset(df=eval_df, tokenizer=tokenizer, mode='all')
+test_dataset = TokenizedRecipeNLGDataset(df=test_df, tokenizer=tokenizer, mode='all')
 
 print('creating model..')
 # declare model
@@ -66,6 +70,7 @@ model = NextByteTransformer(
 print('creating dataloaders')
 train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 eval_dataloader = DataLoader(eval_dataset, batch_size=batch_size, shuffle=True)
+test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
 
 # check shape
 for batch in train_dataloader:
@@ -97,12 +102,15 @@ def evaluate_model(model, dataloader):
     """Takes the model and a dataset. Evaluates the model on the dataset, printing out overall accuracy."""
     # NOTE to make it simple, dataset is a dataloader already
     metric = evaluate.load("accuracy")
+    total_loss = 0
     model.eval()
     for batch in dataloader:
         input_ids = batch['input_ids']
         labels = batch['labels']
         with torch.no_grad():
             logits = model(input_ids)
+            loss = loss_fn(logits.view(-1, logits.size(-1)), labels.view(-1))  # Compute loss
+            total_loss += loss.item()
 
         predictions = torch.argmax(logits, dim=-1)
         # Flatten predictions and labels
@@ -110,14 +118,22 @@ def evaluate_model(model, dataloader):
         labels = labels.view(-1)  # Shape: [batch_size * seq_len]
         
         metric.add_batch(predictions=predictions, references=labels)
+    
+    avg_loss = total_loss / len(dataloader)
     # average = 'micro' uses a global count of the total TPs, FNs and FPs.
-    print(f"F1: {f1_score(y_true=labels, y_pred=predictions, average='micro')}") # average arg needed for multiclass targets
-    print(f"ACCURACY: {metric.compute()}")
+    f1 = f1_score(y_true=labels, y_pred=predictions, average='micro')
+    acc = metric.compute()
+    return f1, acc, avg_loss
+
+train_acc, train_loss, train_f1 = [], [], []
+
+eval_acc, eval_loss, eval_f1 = [], [], []
 
 print('starting training')
 model.train()
 for epoch in range(num_epochs):
     print(f"EPOCH {epoch}")
+    epoch_loss = []
     for batch in tqdm(train_dataloader, unit='batch'):
         input_ids = batch['input_ids']
         labels = batch['labels']
@@ -129,16 +145,46 @@ for epoch in range(num_epochs):
         # cross entropy handles the softmax part
         loss = loss_fn(logits, labels)
         
+        # add loss to within epoch list
+        epoch_loss.append(loss)
+        
         # update weights
         loss.backward()
         optimizer.step()
         lr_scheduler.step()
         optimizer.zero_grad()
     
+    # evaluation after every epoch
+    # stacks losses of all batches into a num_batches x 1 tensor, gets mean, and converts to py float
+    avg_loss_per_epoch = torch.stack(epoch_loss).mean()
     
     print("TRAIN METRICS")
-    evaluate_model(model, train_dataloader)
+    f1_t, acc_t, _ = evaluate_model(model, train_dataloader) # returns f1, acc, avg_loss in that order
+    print(f"F1: {f1_t}")
+    print(f"Acc: {acc_t}")
+    print(f"Avg Loss: {avg_loss_per_epoch}")
+    # keep track of per epoch accuracy/f1/loss on train and eval sets
+    train_f1.append(f1_t)
+    train_acc.append(acc_t)
+    train_loss.append(avg_loss_per_epoch) # avg training loss/epoch
+    
     print("EVAL METRICS")
-    evaluate_model(model, eval_dataloader)
+    f1_e, acc_e, loss_e = evaluate_model(model, eval_dataloader)
+    print(f"F1: {f1_e}")
+    print(f"Acc: {acc_e}")
+    print(f"Avg Loss: {loss_e}")
+   
+    eval_f1.append(f1_e)
+    eval_acc.append(acc_e)
+    eval_loss.append(loss_e)
+    
+
+print('Done Training')
+print(f"Performance On Test Set:")
+f1_test, acc_test, loss_test = evaluate_model(model, test_dataloader)
+print(f"F1: {f1_test}")
+print(f"Acc: {acc_test}")
+print(f"Avg Loss: {loss_test}")
+
 
 
