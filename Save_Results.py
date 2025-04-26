@@ -5,16 +5,16 @@ def save_results(results, model_mode):
         # Write training results
         f.write("Training Results:\n")
         for epoch, (acc, loss, f1) in enumerate(zip(results['train_acc'], results['train_loss'], results['train_f1']), 1):
-            f.write(f"Epoch {epoch}: Accuracy={acc:.4f}, Loss={loss:.4f}, F1={f1:.4f}\n")
+            f.write(f"Epoch {epoch}: Accuracy={acc['accuracy']}, Loss={loss}, F1={f1}\n")
         
         # Write evaluation results
         f.write("\nEvaluation Results:\n")
         for epoch, (acc, loss, f1) in enumerate(zip(results['eval_acc'], results['eval_loss'], results['eval_f1']), 1):
-            f.write(f"Epoch {epoch}: Accuracy={acc:.4f}, Loss={loss:.4f}, F1={f1:.4f}\n")
+            f.write(f"Epoch {epoch}: Accuracy={acc['accuracy']}, Loss={loss}, F1={f1}\n")
         
         # Write test results
         f.write("\nTest Results:\n")
-        f.write(f"Accuracy={results['test_acc']:.4f}, Loss={results['test_loss']:.4f}, F1={results['test_f1']:.4f}\n")
+        f.write(f"Accuracy={results['test_acc']['accuracy']}, Loss={results['test_loss']}, F1={results['test_f1']}\n")
         
         
         

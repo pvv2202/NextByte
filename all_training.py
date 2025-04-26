@@ -39,10 +39,10 @@ print('loading tokenizer')
 tokenizer = PreTrainedTokenizerFast.from_pretrained(tokenizer_path, model_max_length=context_length)
 
 print('loading df..')
-path = kagglehub.dataset_download("paultimothymooney/recipenlg")
+path = '/home/pvandervort25/.cache/kagglehub/datasets/paultimothymooney/recipenlg/versions/1'
 # Load the dataset
 df = pd.read_csv(path + "/RecipeNLG_dataset.csv", header=0)
-df = df[:100]
+df = df
 
 print('splitting into train and test sets')
 # data split into 70% train, & 15% each for eval and testing
@@ -191,6 +191,5 @@ results['test_f1'] = f1_test
 results['test_loss'] = loss_test
 
 save_results(results, model_mode='all')
-
 
 torch.save(model.state_dict(), "./Models/all.pth")
