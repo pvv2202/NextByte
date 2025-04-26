@@ -13,6 +13,7 @@ from pathlib import Path
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 from recipe_nlg import TokenizedRecipeNLGDataset
+from Save_Results import save_results
 
 """Model & training hyper parameters"""
 context_length = 512
@@ -117,9 +118,19 @@ def evaluate_model(model, dataloader, device):
     return f1, acc, avg_loss
 
 
-train_acc, train_loss, train_f1 = [], [], []
 
-eval_acc, eval_loss, eval_f1 = [], [], []   
+results = {
+    'train_acc': [],
+    'train_loss': [],
+    'train_f1': [],
+    'eval_acc': [],
+    'eval_loss': [],
+    'eval_f1': [],
+    'test_acc': 0,
+    'test_loss': 0,
+    'test_f1': 0   
+}
+
 
 model.train()
 for epoch in range(num_epochs):
@@ -155,9 +166,9 @@ for epoch in range(num_epochs):
     print(f"Acc: {acc_t}")
     print(f"Avg Loss: {avg_loss_per_epoch}")
     # keep track of per epoch accuracy/f1/loss on train and eval sets
-    train_f1.append(f1_t)
-    train_acc.append(acc_t)
-    train_loss.append(avg_loss_per_epoch) # avg training loss/epoch
+    results['train_f1'].append(f1_t)
+    results['train_acc'].append(acc_t)
+    results['train_loss'].append(avg_loss_per_epoch) # avg training loss/epoch
     
     print("EVAL METRICS")
     f1_e, acc_e, loss_e = evaluate_model(model, eval_dataloader, device=device)
@@ -165,17 +176,21 @@ for epoch in range(num_epochs):
     print(f"Acc: {acc_e}")
     print(f"Avg Loss: {loss_e}")
    
-    eval_f1.append(f1_e)
-    eval_acc.append(acc_e)
-    eval_loss.append(loss_e)
+    results['eval_f1'].append(f1_e)
+    results['eval_acc'].append(acc_e)
+    results['eval_loss'].append(loss_e)
     
 
 
 print('Done Training')
-print(f"Performance On Test Set:")
+
 f1_test, acc_test, loss_test = evaluate_model(model, test_dataloader, device=device)
-print(f"F1: {f1_test}")
-print(f"Acc: {acc_test}")
-print(f"Avg Loss: {loss_test}")
+
+results['test_acc'] = acc_test
+results['test_f1'] = f1_test
+results['test_loss'] = loss_test
+
+save_results(results, model_mode='all')
+
 
 torch.save(model.state_dict(), "./Models/all.pth")
