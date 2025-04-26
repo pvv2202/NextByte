@@ -114,7 +114,6 @@ def evaluate_model(model, dataloader):
     print(f"F1: {f1_score(y_true=labels, y_pred=predictions, average='micro')}") # average arg needed for multiclass targets
     print(f"ACCURACY: {metric.compute()}")
 
-
 print('starting training')
 model.train()
 for epoch in range(num_epochs):
