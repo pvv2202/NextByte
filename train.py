@@ -22,15 +22,15 @@ d_hidden = 2048
 num_decoders = 8
 num_epochs = 15
 lr = 3e-5
-batch_size = 64
+batch_size = 16
 
-accelerator = Accelerator()
-# different loss function
+# accelerator = Accelerator()
+# different loss function?
 loss_fn = nn.CrossEntropyLoss()
 
 # set mode and tokenizer path
 mode = 'title_to_all'
-tokenizer_path = Path('Tokenizers/' + mode + 'tokenizer')
+tokenizer_path = Path('Tokenizers/' + mode + '_tokenizer')
 
 print('loading tokenizer')
 tokenizer = PreTrainedTokenizerFast.from_pretrained(tokenizer_path, model_max_lenth=context_length)
@@ -39,15 +39,16 @@ tokenizer = PreTrainedTokenizerFast.from_pretrained(tokenizer_path, model_max_le
 print('loading df..')
 path = kagglehub.dataset_download("paultimothymooney/recipenlg")
 # Load the dataset
-# change this?
 df = pd.read_csv(path + "/RecipeNLG_dataset.csv", header=0)
+df = df[:100]
+print(len(df))
 
 print('splitting into train and test sets')
 train_df, eval_df = train_test_split(df, test_size=0.2)
 
 print('creating datasets..')
-train_dataset = TokenizedRecipeNLGDataset(df=train_df, mode='all')
-eval_dataset = TokenizedRecipeNLGDataset(df=eval_df, mode='all')
+train_dataset = TokenizedRecipeNLGDataset(df=train_df, tokenizer=tokenizer, mode='all')
+eval_dataset = TokenizedRecipeNLGDataset(df=eval_df, tokenizer=tokenizer, mode='all')
 
 print('creating model..')
 # declare model
@@ -74,13 +75,15 @@ for batch in train_dataloader:
 # # TODO: explain what this is
 optimizer = AdamW(model.parameters(), lr=lr)
 
-# # TODO: explain what this does
-train_dl, eval_dl, model, optimizer = accelerator.prepare(
-    train_dataloader, eval_dataloader, model, optimizer
-)
+# train_dl, eval_dl, model, optimizer = accelerator.prepare(
+#     train_dataloader, eval_dataloader, model, optimizer
+# )
+
+device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+model.to(device)
 
 # # TODO: explain what this does
-num_training_steps = num_epochs * len(train_dl)
+num_training_steps = num_epochs * len(train_dataloader)
 lr_scheduler = get_scheduler(
     'linear',
     optimizer=optimizer,
@@ -88,21 +91,50 @@ lr_scheduler = get_scheduler(
     num_training_steps=num_training_steps
 )
 
-print('starting training')
 
+def evaluate_model(model, dataloader):
+    """Takes the model and a dataset. Evaluates the model on the dataset, printing out overall accuracy."""
+    # NOTE to make it simple, dataset is a dataloader already
+    metric = evaluate.load("accuracy")
+    model.eval()
+    for batch in dataloader:
+        input_ids = batch['input_ids']
+        labels = batch['labels']
+        with torch.no_grad():
+            logits = model(input_ids)
+
+        predictions = torch.argmax(logits, dim=-1)
+        # Flatten predictions and labels
+        predictions = predictions.view(-1)  # Shape: [batch_size * seq_len]
+        labels = labels.view(-1)  # Shape: [batch_size * seq_len]
+        
+        metric.add_batch(predictions=predictions, references=labels)
+
+    print(metric.compute())
+
+
+print('starting training')
 model.train()
 for epoch in range(num_epochs):
-    for batch in tqdm(train_dl, unit='batch'):
+    print(f"EPOCH {epoch}")
+    for batch in tqdm(train_dataloader, unit='batch'):
         input_ids = batch['input_ids']
         labels = batch['labels']
         
         logits = model(input_ids)
+        # reformat to shape expected by cross entrooy
+        logits = logits.view(-1, logits.size(-1))  # (b * seq, v)
+        labels = labels.view(-1)  # (b * seq)
+        # cross entropy handles the softmax part
         loss = loss_fn(logits, labels)
         
-        accelerator.backward(loss)
+        # update weights
+        loss.backward()
         optimizer.step()
         lr_scheduler.step()
         optimizer.zero_grad()
-  
+    
+    print(f"TRAIN ACCURACY: {evaluate_model(model, train_dataloader)}")
+    print(f"EVAL ACCURACY: {evaluate_model(model, eval_dataloader)}")
 
 

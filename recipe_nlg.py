@@ -61,11 +61,16 @@ class TokenizedRecipeNLGDataset(Dataset):
         tokens = self.tokenizer(
             text=sample,
             padding='max_length',
+            max_length = 512,
             truncation=True,
             return_tensors='pt'
-        )['input_ids'].squeeze()
+        )['input_ids'].squeeze(0) # remove batch dimension
 
-        return tokens[:-1], tokens[1:]
+        # inputs, labels
+        return {
+            'input_ids': tokens[:-1],
+            'labels': tokens[1:]
+        }
 
     @staticmethod
     def clean_text(text):

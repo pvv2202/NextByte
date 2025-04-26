@@ -77,6 +77,7 @@ class NextByteTransformer(nn.Module):
         )
         # final output projection to all tokens in vocab
         self.to_logits = nn.Linear(d_model, vocab_size)
+        # weight tying
         self.to_logits.weight = self.emmbedding_layer.weight
         
     def forward(self, x):
