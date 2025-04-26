@@ -11,6 +11,7 @@ from models import NextByteTransformer
 import pandas as pd
 from pathlib import Path
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import f1_score
 from recipe_nlg import TokenizedRecipeNLGDataset
 
 """Model & training hyper parameters"""
@@ -109,8 +110,9 @@ def evaluate_model(model, dataloader):
         labels = labels.view(-1)  # Shape: [batch_size * seq_len]
         
         metric.add_batch(predictions=predictions, references=labels)
-
-    print(metric.compute())
+    # average = 'micro' uses a global count of the total TPs, FNs and FPs.
+    print(f"F1: {f1_score(y_true=labels, y_pred=predictions, average='micro')}") # average arg needed for multiclass targets
+    print(f"ACCURACY: {metric.compute()}")
 
 
 print('starting training')
@@ -122,7 +124,7 @@ for epoch in range(num_epochs):
         labels = batch['labels']
         
         logits = model(input_ids)
-        # reformat to shape expected by cross entrooy
+        # reformat to shape expected by cross entropy
         logits = logits.view(-1, logits.size(-1))  # (b * seq, v)
         labels = labels.view(-1)  # (b * seq)
         # cross entropy handles the softmax part
@@ -134,7 +136,10 @@ for epoch in range(num_epochs):
         lr_scheduler.step()
         optimizer.zero_grad()
     
-    print(f"TRAIN ACCURACY: {evaluate_model(model, train_dataloader)}")
-    print(f"EVAL ACCURACY: {evaluate_model(model, eval_dataloader)}")
+    
+    print("TRAIN METRICS")
+    evaluate_model(model, train_dataloader)
+    print("EVAL METRICS")
+    evaluate_model(model, eval_dataloader)
 
 
