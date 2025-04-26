@@ -1,0 +1,9 @@
+#! /bin/sh
+#SBATCH --partition gpu-a100-q
+#SBATCH --gres=gpu:a100
+#SBATCH --output dgpu-%-title_to_ingredients.out
+#SBATCH --error dgpu-%j-title_to_ingredients.err
+
+source ~/venv/nextbyte/bin/activate
+srun python3 title_to_ingredients_training.py
+wait
