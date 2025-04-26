@@ -32,7 +32,7 @@ print(device)
 loss_fn = nn.CrossEntropyLoss()
 
 # set mode and tokenizer path
-mode = 'title_to_all'
+mode = 'title_to_ingredients'
 tokenizer_path = Path('Tokenizers/' + mode + '_tokenizer')
 
 print('loading tokenizer')
@@ -50,9 +50,9 @@ train_df, temp_df = train_test_split(df, test_size=0.3, random_state=42)
 eval_df, test_df = train_test_split(temp_df, test_size=0.5, random_state=42)
 
 print('creating datasets..')
-train_dataset = TokenizedRecipeNLGDataset(df=train_df, tokenizer=tokenizer, mode='all')
-eval_dataset = TokenizedRecipeNLGDataset(df=eval_df, tokenizer=tokenizer, mode='all')
-test_dataset = TokenizedRecipeNLGDataset(df=test_df, tokenizer=tokenizer, mode='all')
+train_dataset = TokenizedRecipeNLGDataset(df=train_df, tokenizer=tokenizer, mode='title_to_ingredients')
+eval_dataset = TokenizedRecipeNLGDataset(df=eval_df, tokenizer=tokenizer, mode='title_to_ingredients')
+test_dataset = TokenizedRecipeNLGDataset(df=test_df, tokenizer=tokenizer, mode='title_to_ingredients')
 
 print('creating model..')
 # declare model
@@ -187,6 +187,6 @@ results['test_acc'] = acc_test
 results['test_f1'] = f1_test
 results['test_loss'] = loss_test
 
-save_results(results, model_mode='all')
+save_results(results, model_mode='title_to_ingredients')
 
-torch.save(model.state_dict(), "./Models/all.pth")
+torch.save(model.state_dict(), "./Models/title_to_ingredients.pth")
