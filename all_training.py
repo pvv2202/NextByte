@@ -192,5 +192,4 @@ results['test_loss'] = loss_test
 
 save_results(results, model_mode='all')
 
-
 torch.save(model.state_dict(), "./Models/all.pth")
