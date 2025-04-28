@@ -134,8 +134,8 @@ for epoch in range(num_epochs):
     print(f"EPOCH {epoch}")
     epoch_loss = []
     for batch in tqdm(train_dataloader, unit='batch'):
-        input_ids = batch['input_ids']
-        labels = batch['labels']
+        input_ids = batch['input_ids'].to(device)
+        labels = batch['labels'].to(device)
 
         logits = model(input_ids)
         # reformat to shape expected by cross entrooy
@@ -145,7 +145,7 @@ for epoch in range(num_epochs):
         loss = loss_fn(logits, labels)
 
         # add loss to within epoch list
-        epoch_loss.append(loss)
+        epoch_loss.append(loss.item())
 
         # update weights
         loss.backward()

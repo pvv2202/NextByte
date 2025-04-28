@@ -67,7 +67,7 @@ class TokenizedRecipeNLGDataset(Dataset):
             max_length = 512,
             truncation=True,
             return_tensors='pt'
-        )['input_ids'].squeeze(0).to(self.device) # remove batch dimension
+        )['input_ids'].squeeze(0)
 
         # inputs, labels
         return {
