@@ -145,11 +145,7 @@ for epoch in range(num_epochs):
         loss = loss_fn(logits, labels)
 
         # add loss to within epoch list
-<<<<<<< HEAD
-        epoch_loss.append(loss)
-=======
         epoch_loss.append(loss.item())
->>>>>>> refs/remotes/origin/main
 
         # update weights
         loss.backward()

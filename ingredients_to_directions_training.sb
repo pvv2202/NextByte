@@ -1,9 +1,9 @@
 #! /bin/sh
-#SBATCH --partition gpu-a100-q
-#SBATCH --gres=gpu:a100
+#SBATCH --partition gpu-a5000-q
+#SBATCH --gres=gpu:a5000
 #SBATCH --mem=64G
-#SBATCH --output dgpu-%-ingredients_to_directions.out
-#SBATCH --error dgpu-%j-ingredients_to_directions.err
+#SBATCH --output dgpu-ingredients_to_directions.out
+#SBATCH --error dgpu-ingredients_to_directions.err
 
 source ~/venv/nextbyte/bin/activate
 srun python3 ingredients_to_directions_training.py
