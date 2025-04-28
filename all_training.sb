@@ -1,9 +1,9 @@
 #! /bin/sh
-#SBATCH --partition gpu-a100-q
-#SBATCH --gres=gpu:a100
+#SBATCH --partition gpu-a5000-q
+#SBATCH --gres=gpu:a5000
 #SBATCH --mem=64G
-#SBATCH --output dgpu-%-all_training.out
-#SBATCH --error dgpu-%j-all_training.err
+#SBATCH --output dgpu-all_training.out
+#SBATCH --error dgpu-all_training.err
 
 source ~/venv/nextbyte/bin/activate
 srun python3 all_training.py
