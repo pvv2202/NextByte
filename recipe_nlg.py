@@ -28,32 +28,31 @@ class TokenizedRecipeNLGDataset(Dataset):
         )
 
         # Format strings
-        match mode:
-            case 'all':
-                self.recipe_strings = self.recipes.apply(
-                    lambda row: (
-                        f"{row['title'].lower()}<end_title>"
-                        f"{row['ingredients']}<end_ingredients>"
-                        f"{row['directions']}<end>"
-                    ),
-                    axis=1
-                )
-            case 'title_to_ingredients':
-                self.recipe_strings = self.recipes.apply(
-                    lambda row: (
-                        f"{row['title'].lower()}<end_title>"
-                        f"{row['ingredients']}<end>"
-                    ),
-                    axis=1
-                )
-            case 'ingredients_to_directions':
-                self.recipe_strings = self.recipes.apply(
-                    lambda row: (
-                        f"{row['ingredients']}<end_ingredients>"
-                        f"{row['directions']}<end>"
-                    ),
-                    axis=1
-                )
+        if mode == 'all':
+            self.recipe_strings = self.recipes.apply(
+                lambda row: (
+                    f"{row['title'].lower()}<end_title>"
+                    f"{row['ingredients']}<end_ingredients>"
+                    f"{row['directions']}<end>"
+                ),
+                axis=1
+            )
+        elif mode == 'title_to_ingredients':
+            self.recipe_strings = self.recipes.apply(
+                lambda row: (
+                    f"{row['title'].lower()}<end_title>"
+                    f"{row['ingredients']}<end>"
+                ),
+                axis=1
+            )
+        elif mode == 'ingredients_to_directions':
+            self.recipe_strings = self.recipes.apply(
+                lambda row: (
+                    f"{row['ingredients']}<end_ingredients>"
+                    f"{row['directions']}<end>"
+                ),
+                axis=1
+            )
 
     def __len__(self):
         return len(self.recipes)
@@ -118,32 +117,31 @@ class RecipeNLGDataset(Dataset):
         )
 
         # Format strings
-        match mode:
-            case 'all':
-                self.recipe_strings = self.recipes.apply(
-                    lambda row: (
-                        f"{row['title'].lower()}<end_title>"
-                        f"{row['ingredients']}<end_ingredients>"
-                        f"{row['directions']}<end>"
-                    ),
-                    axis=1
-                )
-            case 'title_to_ingredients':
-                self.recipe_strings = self.recipes.apply(
-                    lambda row: (
-                        f"{row['title'].lower()}<end_title>"
-                        f"{row['ingredients']}<end>"
-                    ),
-                    axis=1
-                )
-            case 'ingredients_to_directions':
-                self.recipe_strings = self.recipes.apply(
-                    lambda row: (
-                        f"{row['ingredients']}<end_ingredients>"
-                        f"{row['directions']}<end>"
-                    ),
-                    axis=1
-                )
+        if mode == 'all':
+            self.recipe_strings = self.recipes.apply(
+                lambda row: (
+                    f"{row['title'].lower()}<end_title>"
+                    f"{row['ingredients']}<end_ingredients>"
+                    f"{row['directions']}<end>"
+                ),
+                axis=1
+            )
+        elif mode == 'title_to_ingredients':
+            self.recipe_strings = self.recipes.apply(
+                lambda row: (
+                    f"{row['title'].lower()}<end_title>"
+                    f"{row['ingredients']}<end>"
+                ),
+                axis=1
+            )
+        elif mode == 'ingredients_to_directions':
+            self.recipe_strings = self.recipes.apply(
+                lambda row: (
+                    f"{row['ingredients']}<end_ingredients>"
+                    f"{row['directions']}<end>"
+                ),
+                axis=1
+            )
 
     def __len__(self):
         return len(self.recipes)

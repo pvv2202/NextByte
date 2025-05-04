@@ -1,6 +1,7 @@
 import torch
 import kagglehub
 import torch.nn as nn
+import numpy as np
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
 from transformers import get_scheduler, PreTrainedTokenizerFast
@@ -39,7 +40,7 @@ print('loading tokenizer')
 tokenizer = PreTrainedTokenizerFast.from_pretrained(tokenizer_path, model_max_length=context_length)
 
 print('loading df..')
-path = kagglehub.dataset_download("paultimothymooney/recipenlg")
+path = '/home/pvandervort25/.cache/kagglehub/datasets/paultimothymooney/recipenlg/versions/1'
 # Load the dataset
 df = pd.read_csv(path + "/RecipeNLG_dataset.csv", header=0)
 
@@ -147,7 +148,7 @@ for epoch in range(num_epochs):
         loss = loss_fn(logits, labels)
         
         # add loss to within epoch list
-        epoch_loss.append(loss.item())
+        epoch_loss.append(loss.detach())
 
         # update weights
         loss.backward()
@@ -157,7 +158,7 @@ for epoch in range(num_epochs):
 
      # evaluation after every epoch
     # stacks losses of all batches into a num_batches x 1 tensor, gets mean, and converts to py float
-    avg_loss_per_epoch = torch.stack(epoch_loss).mean()
+    avg_loss_per_epoch = np.mean(epoch_loss)
     
     print("TRAIN METRICS")
     f1_t, acc_t, _ = evaluate_model(model, train_dataloader, device=device) # returns f1, acc, avg_loss in that order
