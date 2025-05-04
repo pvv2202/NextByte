@@ -43,7 +43,6 @@ print('loading df..')
 path = '/home/pvandervort25/.cache/kagglehub/datasets/paultimothymooney/recipenlg/versions/1'
 # Load the dataset
 df = pd.read_csv(path + "/RecipeNLG_dataset.csv", header=0)
-df = df
 
 print('splitting into train and test sets')
 # data split into 70% train, & 15% each for eval and testing
