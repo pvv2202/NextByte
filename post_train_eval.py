@@ -26,12 +26,12 @@ def get_bleu(models, tokenizers, num_prompts_per_trial, dataset):
 
         if type(models) == list:
             title_to_ingredients_tokenizer = tokenizers[0]
-
             ingredients_to_directions_tokenizer = tokenizers[1]
 
             title_to_ingredients_model = models[0]
             ingredients_to_directions_model = models[1]
-            ingredients = 
+
+            input = title_to_ingredients_tokenizer.encode(title_prompt, return_tensors="pt").to(device)
 
         else:
 
@@ -47,7 +47,6 @@ def get_bleu(models, tokenizers, num_prompts_per_trial, dataset):
 
 
 if __name__ in "__main__":
-    
     # same params used in all training
     context_length = 512
     d_model = 512
@@ -56,6 +55,8 @@ if __name__ in "__main__":
     d_hidden = 2048
     num_decoders = 2
     num_epochs = 8
+
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     
     # instantiate plain model
     model = NextByteTransformer(
@@ -66,7 +67,7 @@ if __name__ in "__main__":
         num_hidden_layers=num_hidden_layers,
         d_hidden=d_hidden,
         num_decoders=num_decoders
-    ) 
+    ).to(device) 
     
     # Load models
     title_to_ingredients_model = model
