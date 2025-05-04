@@ -146,7 +146,7 @@ for epoch in range(num_epochs):
         loss = loss_fn(logits, labels)
 
         # add loss to within epoch list
-        epoch_loss.append(loss.item())
+        epoch_loss.append(loss.detach())
 
         # update weights
         loss.backward()
@@ -156,7 +156,7 @@ for epoch in range(num_epochs):
 
     # evaluation after every epoch
     # stacks losses of all batches into a num_batches x 1 tensor, gets mean, and converts to py float
-    avg_loss_per_epoch = np.mean(epoch_loss)
+    avg_loss_per_epoch = np.mean([loss.cpu().item() for loss in epoch_loss])
 
     print("TRAIN METRICS")
     f1_t, acc_t, _ = evaluate_model(model, train_dataloader, device=device)  # returns f1, acc, avg_loss in that order

@@ -6,23 +6,36 @@ import pandas as pd
 from torcheval.metrics.functional import bleu_score
 import random
 from recipe_nlg import RecipeNLGDataset
+from pathlib import Path
 from models import NextByteTransformer
+from transformers import PreTrainedTokenizerFast
 from Save_Results import save_bleu
 
 
 
-def get_bleu(model, num_prompts_per_trial, dataset):
-    
+def get_bleu(models, tokenizers, num_prompts_per_trial, dataset):    
     pred_recipes, ground_truth = [], []
     
     for i in range(num_prompts_per_trial):
         # random index for a random recipe
-        rand_index = random.randint(dataset.__len__())
+        rand_index = random.randint(0, dataset.__len__()-1)
         # get the title on its own from the cleaned data frame
         title_prompt = dataset.recipes.iloc[rand_index]['title']
         # get the full recipe string (not tokenized)
         recipe_ref = dataset.recipe_strings.iloc[rand_index]
-        pred = model.generate(title_prompt) # replace with actual generation method
+
+        if type(models) == list:
+            title_to_ingredients_tokenizer = tokenizers[0]
+
+            ingredients_to_directions_tokenizer = tokenizers[1]
+
+            title_to_ingredients_model = models[0]
+            ingredients_to_directions_model = models[1]
+            ingredients = 
+
+        else:
+
+            
         
         pred_recipes.append(pred)
         ground_truth.append(recipe_ref)
@@ -55,11 +68,26 @@ if __name__ in "__main__":
         num_decoders=num_decoders
     ) 
     
-    # LOAD MODEL HERE
-    model_name = ""
-    state_dict_path = ""
-    model.load_state_dict(state_dict_path)
-      
+    # Load models
+    title_to_ingredients_model = model
+    title_to_ingredients_model.load_state_dict(Path("Models/title_to_ingredients.pth"))
+    ingredients_to_directions_model = model
+    ingredients_to_directions_model.load_state_dict(Path("Models/ingredients_to_directions.pth"))
+    title_to_all_model = model
+    title_to_all_model.load_state_dict(Path("Models/all.pth"))
+    models = [title_to_ingredients_model, ingredients_to_directions_model]
+
+    # Load tokenizers
+    title_to_ingredients_tokenizer = PreTrainedTokenizerFast.from_pretrained(
+        Path("Tokenizers/title_to_ingredients_tokenizer")
+    )
+    ingredients_to_directions_tokenizer = PreTrainedTokenizerFast.from_pretrained(
+        Path("Tokenizers/ingredients_to_directions_tokenizer")
+    )
+    title_to_all_tokenizer = PreTrainedTokenizerFast.from_pretrained(
+        Path("Tokenizers/title_to_all_tokenizer")
+    )
+    seq_tokenizers = [title_to_ingredients_tokenizer, ingredients_to_directions_tokenizer]
     
     path = '/home/pvandervort25/.cache/kagglehub/datasets/paultimothymooney/recipenlg/versions/1'
     # Load the dataset
@@ -71,7 +99,6 @@ if __name__ in "__main__":
     num_trials = 10000
     
     results = ['trial', 'bleu_score']
-    
     
     for i in range(num_trials):
         results.append([i + 1, get_bleu(model, num_prompts_per_trial, dataset)])

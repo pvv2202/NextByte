@@ -2,8 +2,8 @@
 #SBATCH --partition gpu-a5000-q
 #SBATCH --gres=gpu:a5000
 #SBATCH --mem=64G
-#SBATCH --output dgpu-%-title_to_ingredients.out
-#SBATCH --error dgpu-%j-title_to_ingredients.err
+#SBATCH --output dgpu-title_to_ingredients.out
+#SBATCH --error dgpu-title_to_ingredients.err
 
 source ~/venv/nextbyte/bin/activate
 srun python3 title_to_ingredients_training.py

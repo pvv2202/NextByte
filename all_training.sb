@@ -1,6 +1,7 @@
 #! /bin/sh
 #SBATCH --partition gpu-a100-q
 #SBATCH --gres=gpu:a100
+#SBATCH --mem=64G
 #SBATCH --output dgpu-all_training.out
 #SBATCH --error dgpu-all_training.err
 
