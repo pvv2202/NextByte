@@ -1,3 +1,14 @@
+import csv
+from pathlib import Path
+
+def save_bleu(results, model_name):
+    
+    file_path = Path('results/' + model_name + '_bleu.csv')
+    
+    with open(file_path, 'w') as f:
+        writer = csv.writer(f)
+        # results are in the 2-d list format compatable with csv writer
+        writer.writerows(results)
 
 
 def save_results(results, model_mode):
