@@ -1,0 +1,11 @@
+#! /bin/sh
+#SBATCH --partition gpu-a100-q
+#SBATCH --gres=gpu:a100
+#SBATCH --mem=32G
+#SBATCH --output dgpu-post_train.out
+#SBATCH --error dgpu-post_train.err
+
+
+source ~/venv/nextbyte/bin/activate
+srun python3 post_train_eval.py
+wait
