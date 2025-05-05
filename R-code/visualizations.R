@@ -119,7 +119,8 @@ flextable(title_all) |>
       avg_loss = "Avg Loss",
       f1 = "F1"
     )
-  )
+  ) |>
+  save_as_image('title_all_training.png')
 
 title_ingr <- results |>
   filter(model == 'title_ing') |>
@@ -136,7 +137,8 @@ flextable(title_ingr) |>
       avg_loss = "Avg Loss",
       f1 = "F1"
     )
-  )
+  ) |>
+  save_as_image('title_ingr_training.png')
 
 ingr_dir <- results |>
   filter(model == 'ing_dir') |>
@@ -153,7 +155,8 @@ flextable(ingr_dir) |>
       avg_loss = "Avg Loss",
       f1 = "F1"
     )
-  )
+  ) |>
+  save_as_image('ingr_dir_training.png')
  
 
 
