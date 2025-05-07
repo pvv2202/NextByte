@@ -1,56 +1,43 @@
 library(tidyverse)
 library(rstatix)
 library(broom)
-
-
-#===============================================================================
-# randomized selection bleu scores
-#===============================================================================
-all_bleu_rand <- read.csv('./data/all_bleu_rand.csv')
-seq_bleu_rand <- read_csv('./data/seq_bleu_rand.csv')
-
-all_bleu_rand <- all_bleu_rand |>
-  select(Trial, Bleu) |>
-  mutate(Trial = "rand") |>
-  mutate(Model = 'all') |>
-  drop_na()
-
-seq_bleu_rand <- seq_bleu_rand |>
-  select(Trial, Bleu) |>
-  mutate(Trial = "rand") |>
-  mutate(Model = 'seq') |>
-  drop_na()
-
+library(kableExtra)
 #===============================================================================
 # first 10,000 selection bleu scores
 #===============================================================================
-all_bleu_ord <- read.csv('./data/all_bleu_ord.csv')
-seq_bleu_ord <- read_csv('./data/seq_bleu_ord.csv')
 
-all_bleu_ord <- all_bleu_ord |>
-  select(Trial, Bleu) |>
-  mutate(Trial = "ord") |>
-  mutate(Model = 'all') |>
-  drop_na()
+all_res <- read.csv('./data/all_res.csv') |>
+    mutate(model = 'all')
 
-seq_bleu_ord <- seq_bleu_ord |>
-  select(Trial, Bleu) |>
-  mutate(Trial = "ord") |>
-  mutate(Model = 'seq') |>
-  drop_na()
+seq_res <- read_csv('./data/seq_res.csv') |>
+ mutate(model = 'seq')
 
 #===============================================================================
 # Analysis
 #===============================================================================
 
-rand_trial_comb <- bind_rows(all_bleu_rand, seq_bleu_rand)
+combined <- bind_rows(all_res, seq_res) |>
+  select(-trial)
 
-ord_trial_comb <- bind_rows(all_bleu_ord, seq_bleu_ord)
+combined |>
+  group_by(model)|>
+  summarize(
+     n =n(),
+     avg_bl = mean(bleu),
+     avg_p = mean(precision),
+     avg_r = mean(recall),
+     avg_f1 = mean(f1)
+) 
 
-levene_rand <- levene_test(Bleu~Model, data=rand_trial_comb)
+levene_test(bleu~model, data=combined)
+levene_test(precision~model, data=combined)
+levene_test(recall~model,data=combined)
+levene_test(f1~model, data=combined)
 
-levene_ord <- levene_test(Bleu~Model, data=ord_trial_comb)
+t.test(bleu~model, data = combined, var.equal = TRUE)
+t.test(precision~model, data = combined, var.equal = TRUE)
+t.test(recall~model, data = combined, var.equal = TRUE)
+t.test(f1~model, data = combined, var.equal = TRUE)
 
-t.test(Bleu ~ Model, data = rand_trial_comb, var.equal = FALSE)
+# visualize
 
-t.test(Bleu ~ Model, data = ord_trial_comb, var.equal = TRUE)
