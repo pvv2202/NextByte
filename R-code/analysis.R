@@ -24,9 +24,13 @@ combined |>
   summarize(
      n =n(),
      avg_bl = mean(bleu),
+     std_bl = sd(bleu),
      avg_p = mean(precision),
+     std_p = sd(precision),
      avg_r = mean(recall),
-     avg_f1 = mean(f1)
+     std_r = sd(recall),
+     avg_f1 = mean(f1),
+     std_f1 = sd(f1)
 ) 
 
 levene_test(bleu~model, data=combined)
