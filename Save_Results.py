@@ -6,10 +6,10 @@ def save_bleu(results, model_name):
     file_path = Path('results/' + model_name + '_bleu.csv')
     
     with open(file_path, 'w') as f:
-        writer = csv.writer(f)
+        writer = csv.DictWriter(f, fieldnames=['trial', 'bleu', 'precision', 'recall', 'f1'])
+        writer.writeheader()
         # results are in the 2-d list format compatable with csv writer
         writer.writerows(results)
-
 
 def save_results(results, model_mode):
     with open(model_mode + '_results.txt', 'w') as f:
@@ -26,6 +26,3 @@ def save_results(results, model_mode):
         # Write test results
         f.write("\nTest Results:\n")
         f.write(f"Accuracy={results['test_acc']['accuracy']}, Loss={results['test_loss']}, F1={results['test_f1']}\n")
-        
-        
-        

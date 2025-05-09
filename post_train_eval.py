@@ -3,10 +3,13 @@ import torch
 import torch.nn
 import numpy as np
 import pandas as pd
+import re
 import torch.nn.functional as F
-from torcheval.metrics.functional import bleu_score
+import nltk
+import nltk.translate.bleu_score as bleu
 import random
 import csv
+from bert_score import score
 from recipe_nlg import RecipeNLGDataset
 from pathlib import Path
 from models import NextByteTransformer
@@ -16,43 +19,48 @@ from Save_Results import save_bleu
 print('at top of script')
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
+chenCherry = bleu.SmoothingFunction()
+
 def generate_autoregressive(model, tokenizer, input_text, max_new_tokens=100, top_k=10, context_length=512):
     model.eval()
     input_ids = tokenizer.encode(input_text, return_tensors="pt").to(device)
     input_ids = input_ids[:, -context_length:]
-    generated = input_ids
+    generated = input_ids.long().to(device)
 
     with torch.no_grad():
         for _ in range(max_new_tokens):
             if generated.size(1) > context_length:
                 generated = generated[:, -context_length:]
-            
-            generated = generated.to(device)
 
-            logits = model(generated)[:, -1, :]  # shape: [1, vocab_size]
+            logits = model(generated.long())[:, -1, :]
             topk_logits, topk_indices = torch.topk(logits, k=top_k, dim=-1)
             probs = F.softmax(topk_logits, dim=-1)
 
-            sampled_index = torch.multinomial(probs, num_samples=1).to(device)  # shape: [1, 1]
-            next_token = topk_indices.gather(-1, sampled_index)  # shape: [1, 1]
+            sampled_index = torch.multinomial(probs, num_samples=1).to(device)
+            next_token = topk_indices.gather(-1, sampled_index)
 
-            generated = torch.cat([generated, next_token.to(device)], dim=1)
+            generated = torch.cat([generated, next_token], dim=1).long().to(device)
 
             if next_token.item() == tokenizer.eos_token_id:
                 break
 
     return tokenizer.decode(generated[0], skip_special_tokens=False)
 
-def get_bleu(models, tokenizers, dataset):    
-    
-    pred_recipe, ground_truth = [], []
-    
-    # random index for a random recipe
-    rand_index = random.randint(0, dataset.__len__()-1)
+
+def clean_text(text, fix_tokens):
+    text = text.replace(" ##", "")
+    text = text.replace("##", "")
+    for token in fix_tokens:
+        text = text.replace(token, " ")
+    text = re.sub(r'[^\w\s]', ' ', text)  # Replace punctuation with space
+    text = re.sub(r'\s+', ' ', text).strip()  # Remove extra spaces
+    return text
+
+def get_metrics(models, tokenizers, dataset, index, mode=None):
     # get the title on its own from the cleaned data frame
-    title_prompt = dataset.recipes.iloc[rand_index]['title']
+    title_prompt = dataset.recipes.iloc[index]['title']
     # get the full recipe string (not tokenized)
-    recipe_ref = dataset.recipe_strings.iloc[rand_index]
+    recipe_ref = dataset.recipe_strings.iloc[index]
 
     if type(models) == list:
         title_to_ingredients_tokenizer = tokenizers[0]
@@ -71,7 +79,11 @@ def get_bleu(models, tokenizers, dataset):
         )
         title_index = output1.find("<end_title>")
         title = output1[:title_index]
-        ingredients = output1[title_index + len("<end_title>"):]
+        if mode is not None:
+            ingredients = output1[title_index + len("<end_title>"):]
+
+        else:
+            ingredients = output1
 
         """Run through ingredients to directions model"""
         output2 = generate_autoregressive(
@@ -92,16 +104,24 @@ def get_bleu(models, tokenizers, dataset):
             top_k=10,
             context_length=context_length,
         )
-    
-    pred_recipe.append(pred)
-    ground_truth.append(recipe_ref)
-        
-    bleu = bleu_score(input=pred_recipe, target=ground_truth, n_gram=4) # n_gram = max count of sequential words to compare strings on
-    
+
+    # Reformat to get comparable data
+    fix_tokens = ["<end>", "<end_ingredients>", "<end_title>"]
+    pred_clean = clean_text(pred, fix_tokens)
+    ref_clean = clean_text(recipe_ref, fix_tokens)
+
+    bleu_score = bleu.sentence_bleu([ref_clean.split()], pred_clean.split(), smoothing_function=chenCherry.method2)
+    P, R, F1 = score(
+        [pred_clean], [ref_clean],
+        lang="en",
+        model_type="bert-base-uncased", # Using a small model cause the big one took forever
+        batch_size=64,
+        verbose=False,
+        device=device
+    )
+
     # bleu is a 1d tensor, extract the value and convert to an np.float64 first
-    return bleu.item()
-
-
+    return bleu_score, P[0].item(), R[0].item(), F1[0].item()
 
 # same params used in all training
 context_length = 512
@@ -176,31 +196,43 @@ title_to_all_tokenizer.eos_token_id = title_to_all_tokenizer.convert_tokens_to_i
 seq_tokenizers = [title_to_ingredients_tokenizer, ingredients_to_directions_tokenizer]
 
 print('loading dataset')
-path = '/home/pvandervort25/.cache/kagglehub/datasets/paultimothymooney/recipenlg/versions/1'
+path = Path.home() / ".cache" / "kagglehub" / "datasets" / "paultimothymooney" / "recipenlg" / "versions" / "1"
 # Load the dataset
-df = pd.read_csv(path + "/RecipeNLG_dataset.csv", header=0)
+df = pd.read_csv(path / "RecipeNLG_dataset.csv", header=0)
 dataset = RecipeNLGDataset(df=df, mode='all')
 
 # up to us
 num_trials = 10000
+indices = [random.randint(0, dataset.__len__()-1) for i in range(num_trials)]
 
 # Get results for single model
-results_all = ['trial', 'bleu_score']
-
 print('starting test')
-for i in range(num_trials):
-    results_all.append([i + 1, get_bleu(title_to_all_model, title_to_all_tokenizer, dataset)])
+results_seq = []
+for i, idx in enumerate(indices):
+    bleu_score, precision, recall, f1 = get_metrics([title_to_ingredients_model, ingredients_to_directions_model], [title_to_ingredients_tokenizer, ingredients_to_directions_tokenizer], dataset, idx, mode="seq")
+    results_seq.append({"trial": i + 1, "bleu": bleu_score, "precision": precision, "recall": recall, "f1": f1})
+    if i % 100 == 0:
+        print(f"Sequence: {i}")
+
+save_bleu(results=results_seq, model_name="seq")
+
+results_all = []
+for i, idx in enumerate(indices):
+    bleu_score, precision, recall, f1 = get_metrics(title_to_all_model, title_to_all_tokenizer, dataset, idx)
+    results_all.append({"trial": i + 1, "bleu": bleu_score, "precision": precision, "recall": recall, "f1": f1})
     if i % 100 == 0:
         print(f"Single: {i}")
     
 save_bleu(results=results_all, model_name="all")
 
-# Get results for sequence of models
-results_seq = ['trial', 'bleu_score']
-
-for i in range(num_trials):
-    results_seq.append([i + 1, get_bleu(seq_models, seq_tokenizers, dataset)])
+results_mix = []
+for i, idx in enumerate(indices):
+    bleu_score, precision, recall, f1 = get_metrics([title_to_ingredients_model, title_to_all_model], [title_to_ingredients_tokenizer, title_to_all_tokenizer], dataset, idx)
+    results_mix.append({"trial": i + 1, "bleu": bleu_score, "precision": precision, "recall": recall, "f1": f1})
     if i % 100 == 0:
-        print(f"Sequence: {i}")
+        print(f"Mix: {i}")
 
-save_bleu(results=results_seq, model_name="seq")
+save_bleu(results=results_mix, model_name="mix")
+
+# Get results for sequence of models
+# results_seq = ['trial', 'bleu_score', 'precision', 'recall', 'f1']
