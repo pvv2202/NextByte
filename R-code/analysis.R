@@ -2,6 +2,7 @@ library(tidyverse)
 library(rstatix)
 library(broom)
 library(kableExtra)
+library(broom)
 #===============================================================================
 # first 10,000 selection bleu scores
 #===============================================================================
@@ -56,19 +57,35 @@ aov_f1 <- aov(f1~model, data=combined)
 summary(aov_f1)
 
 
+# save bleu tukey
+tidy(TukeyHSD(aov_bleu)) |>
+  select(-term, -null.value) |>
+  kable(digits = 4, 
+        col.names = c('Contrast', 'Diff est.', 'Low', 'High', 'p adj.')) |>
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) |>
+  save_kable(file = 'tukey_bleu.png')
 
-TukeyHSD(aov_bleu)
+# save precision tukey
+tidy(TukeyHSD(aov_p)) |>
+  select(-term, -null.value) |>
+  kable(digits = 4, 
+        col.names = c('Contrast', 'Diff est.', 'Low', 'High', 'p adj.')) |>
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) |>
+  save_kable(file = 'tukey_p.png')
 
-TukeyHSD(aov_p)
+# save recall tukey
+tidy(TukeyHSD(aov_r)) |>
+  select(-term, -null.value) |>
+  kable(digits = 4, 
+        col.names = c('Contrast', 'Diff est.', 'Low', 'High', 'p adj.')) |>
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) |>
+  save_kable(file = 'tukey_r.png')
 
-TukeyHSD(aov_r)
-
-TukeyHSD(aov_f1)
-
-# t.test(bleu~model, data = combined, var.equal = TRUE)
-# t.test(precision~model, data = combined, var.equal = TRUE)
-# t.test(recall~model, data = combined, var.equal = TRUE)
-# t.test(f1~model, data = combined, var.equal = TRUE)
-
-# visualize
+# save f1 tukey
+tidy(TukeyHSD(aov_f1)) |>
+  select(-term, -null.value) |>
+  kable(digits = 4, 
+        col.names = c('Contrast', 'Diff est.', 'Low', 'High', 'p adj.')) |>
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) |>
+  save_kable(file = 'tukey_f1.png')
 
