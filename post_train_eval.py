@@ -22,32 +22,35 @@ device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cp
 chenCherry = bleu.SmoothingFunction()
 
 def generate_autoregressive(model, tokenizer, input_text, max_new_tokens=100, top_k=10, context_length=512):
-    model.eval()
-    input_ids = tokenizer.encode(input_text, return_tensors="pt").to(device)
-    input_ids = input_ids[:, -context_length:]
-    generated = input_ids.long().to(device)
+    model.eval() # Set to eval mode
+    input_ids = tokenizer.encode(input_text, return_tensors="pt").to(device) # Tokenize input
+    input_ids = input_ids[:, -context_length:] # Cut off if its over context length (not possible here since we go to 400 but worth including)
+    generated = input_ids.long().to(device)  # Send them to gpu
 
-    with torch.no_grad():
+    with torch.no_grad(): # Don't track gradient
         for _ in range(max_new_tokens):
             if generated.size(1) > context_length:
                 generated = generated[:, -context_length:]
 
-            logits = model(generated.long())[:, -1, :]
-            topk_logits, topk_indices = torch.topk(logits, k=top_k, dim=-1)
-            probs = F.softmax(topk_logits, dim=-1)
+            logits = model(generated.long())[:, -1, :] # Reshape logits for compatibility
+            topk_logits, topk_indices = torch.topk(logits, k=top_k, dim=-1) # Get top k
+            probs = F.softmax(topk_logits, dim=-1) # Softmax to get probs
 
-            sampled_index = torch.multinomial(probs, num_samples=1).to(device)
+            sampled_index = torch.multinomial(probs, num_samples=1).to(device) # Actually sampling
             next_token = topk_indices.gather(-1, sampled_index)
 
-            generated = torch.cat([generated, next_token], dim=1).long().to(device)
+            generated = torch.cat([generated, next_token], dim=1).long().to(device) # Generated tokens so prev + next
 
-            if next_token.item() == tokenizer.eos_token_id:
+            if next_token.item() == tokenizer.eos_token_id: # Stop if we reach the end token for this model. Always "<end>"
                 break
 
+    # Return as text and don't skip special tokens
     return tokenizer.decode(generated[0], skip_special_tokens=False)
 
 
 def clean_text(text, fix_tokens):
+    # Necessary for the model pipelines. We need the special tokens to know when to stop so we can't set skip_special_tokens to true.
+    # Probably a better way to go about the pipeline but not super important for right now since we aren't deploying this or anything.
     text = text.replace(" ##", "")
     text = text.replace("##", "")
     for token in fix_tokens:
@@ -62,13 +65,14 @@ def get_metrics(models, tokenizers, dataset, index, mode=None):
     # get the full recipe string (not tokenized)
     recipe_ref = dataset.recipe_strings.iloc[index]
 
-    if type(models) == list:
+    if type(models) == list: # Originally just for seq. Now includes title and all
         title_to_ingredients_tokenizer = tokenizers[0]
-        ingredients_to_directions_tokenizer = tokenizers[1]
+        ingredients_to_directions_tokenizer = tokenizers[1] # This will actually be all for the title and all model
 
         title_to_ingredients_model = models[0]
-        ingredients_to_directions_model = models[1]
+        ingredients_to_directions_model = models[1] # This will also actually be all for the title and all model
 
+        # Generate title to ingredients output
         output1 = generate_autoregressive(
             model=title_to_ingredients_model,
             tokenizer=title_to_ingredients_tokenizer,
@@ -79,13 +83,13 @@ def get_metrics(models, tokenizers, dataset, index, mode=None):
         )
         title_index = output1.find("<end_title>")
         title = output1[:title_index]
-        if mode is not None:
+        if mode is not None: # Mode set to seq here. This removes the title for the seq model. It gets skipped otherwise
             ingredients = output1[title_index + len("<end_title>"):]
 
         else:
             ingredients = output1
 
-        """Run through ingredients to directions model"""
+        # Generate directions with either ingredients to directions or all depending
         output2 = generate_autoregressive(
             model=ingredients_to_directions_model,
             tokenizer=ingredients_to_directions_tokenizer,
@@ -96,6 +100,7 @@ def get_metrics(models, tokenizers, dataset, index, mode=None):
         )
         pred = title+"<end_title>"+output2
     else:
+        # If it isn't a list we just do one autoregressive passs
         pred = generate_autoregressive(
             model=models,
             tokenizer=tokenizers,
@@ -110,7 +115,7 @@ def get_metrics(models, tokenizers, dataset, index, mode=None):
     pred_clean = clean_text(pred, fix_tokens)
     ref_clean = clean_text(recipe_ref, fix_tokens)
 
-    bleu_score = bleu.sentence_bleu([ref_clean.split()], pred_clean.split(), smoothing_function=chenCherry.method2)
+    bleu_score = bleu.sentence_bleu([ref_clean.split()], pred_clean.split(), smoothing_function=chenCherry.method2) # Just adds 1 to each n-gram to smooth things for low scores
     P, R, F1 = score(
         [pred_clean], [ref_clean],
         lang="en",
@@ -205,8 +210,7 @@ dataset = RecipeNLGDataset(df=df, mode='all')
 num_trials = 10000
 indices = [random.randint(0, dataset.__len__()-1) for i in range(num_trials)]
 
-# Get results for single model
-print('starting test')
+# Seq model (title -> ingr, ingr -> dir)
 results_seq = []
 for i, idx in enumerate(indices):
     bleu_score, precision, recall, f1 = get_metrics([title_to_ingredients_model, ingredients_to_directions_model], [title_to_ingredients_tokenizer, ingredients_to_directions_tokenizer], dataset, idx, mode="seq")
@@ -216,6 +220,7 @@ for i, idx in enumerate(indices):
 
 save_bleu(results=results_seq, model_name="seq")
 
+# All model (title -> all)
 results_all = []
 for i, idx in enumerate(indices):
     bleu_score, precision, recall, f1 = get_metrics(title_to_all_model, title_to_all_tokenizer, dataset, idx)
@@ -225,6 +230,7 @@ for i, idx in enumerate(indices):
     
 save_bleu(results=results_all, model_name="all")
 
+# Mixed model (title -> ingr, title -> all)
 results_mix = []
 for i, idx in enumerate(indices):
     bleu_score, precision, recall, f1 = get_metrics([title_to_ingredients_model, title_to_all_model], [title_to_ingredients_tokenizer, title_to_all_tokenizer], dataset, idx)
@@ -233,6 +239,3 @@ for i, idx in enumerate(indices):
         print(f"Mix: {i}")
 
 save_bleu(results=results_mix, model_name="mix")
-
-# Get results for sequence of models
-# results_seq = ['trial', 'bleu_score', 'precision', 'recall', 'f1']
