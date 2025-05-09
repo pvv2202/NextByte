@@ -101,60 +101,77 @@ val_data |>
 # Full Training results
 #===============================================================================
 library(flextable)
+library(textutils)
 
-results <- train_results 
+results <- train_results |>
+  filter(set != 'test')
+
+test_row <- train_results |> 
+  filter(set == "test")  
+
 
 title_all <- results |>
   filter(model == 'title_all') |>
-  select(-model)
+  select(-model) |>
+  pivot_wider(names_from = "set", values_from = c(
+    'accuracy', 'avg_loss', 'f1'
+  )) 
 
-flextable(title_all) |>
-  merge_v(j='set') |>
-  theme_vanilla() |>
-  set_header_labels(
-    values = list(
-      set = 'Set',
-      epoch = 'Epoch',
-      accuracy = 'Accuracy',
-      avg_loss = "Avg Loss",
-      f1 = "F1"
-    )
-  )
+textutils::TeXencode(title_all)
+
+title_all |>
+  kable(format = "html", digits = 4, 
+        col.names = c('Epoch', 'Train', 'Val', 'Train', 'Val', 'Train', 'Val')) |>
+  add_header_above(c(" " = 1, 
+                     "Accuracy" = 2, 
+                     "Avg Loss" = 2, 
+                     "F1 Score" = 2)) |>
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) |>
+  save_kable(file = 'title_all_res.png')
+
+
+
 
 title_ingr <- results |>
   filter(model == 'title_ing') |>
   select(-model)
 
-flextable(title_ingr) |>
-  merge_v(j='set') |>
-  theme_vanilla() |>
-  set_header_labels(
-    values = list(
-      set = 'Set',
-      epoch = 'Epoch',
-      accuracy = 'Accuracy',
-      avg_loss = "Avg Loss",
-      f1 = "F1"
-    )
-  )
+title_ingr |>
+  pivot_wider(names_from = "set", values_from = c(
+    'accuracy', 'avg_loss', 'f1'
+  )) |>
+  kable(format = "html", digits = 4, 
+        col.names = c('Epoch', 'Train', 'Val', 'Train', 'Val', 'Train', 'Val')) |>
+  add_header_above(c(" " = 1, 
+                     "Accuracy" = 2, 
+                     "Avg Loss" = 2, 
+                     "F1 Score" = 2)) |>
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) |>
+  save_kable(file = 'title_ingr_res.png')
+
+
 
 ingr_dir <- results |>
   filter(model == 'ing_dir') |>
   select(-model)
 
-flextable(ingr_dir) |>
-  merge_v(j='set') |>
-  theme_vanilla() |>
-  set_header_labels(
-    values = list(
-      set = 'Set',
-      epoch = 'Epoch',
-      accuracy = 'Accuracy',
-      avg_loss = "Avg Loss",
-      f1 = "F1"
-    )
-  )
- 
+ingr_dir |>
+  pivot_wider(names_from = "set", values_from = c(
+    'accuracy', 'avg_loss', 'f1'
+  )) |>
+  kable(format = "html", digits = 4, 
+        col.names = c('Epoch', 'Train', 'Val', 'Train', 'Val', 'Train', 'Val')) |>
+  add_header_above(c(" " = 1, 
+                     "Accuracy" = 2, 
+                     "Avg Loss" = 2, 
+                     "F1 Score" = 2)) |>
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) |>
+  save_kable(file = 'ingr_dir_res.png')
+
+toLatex()
+
+
+
 
 
 
