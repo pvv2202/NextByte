@@ -28,7 +28,7 @@ batch_size = 32
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 print(device)
 
-mode = 'title_to_all'
+mode = 'nextbyte'
 tokenizer_path = Path('Tokenizers/' + mode + '_tokenizer')
 
 print('loading tokenizer')
