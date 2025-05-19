@@ -1,0 +1,10 @@
+#! /bin/sh
+#SBATCH --partition gpu-a100-q
+#SBATCH --gres=gpu:a100
+#SBATCH --mem=64G
+#SBATCH --output dgpu-nextbyte_long_mp.out
+#SBATCH --error dgpu-nextbyte_long_mp.err
+
+source ~/venv/nextbyte/bin/activate
+srun python3 nextbyte_mp.py
+wait
