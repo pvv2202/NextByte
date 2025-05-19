@@ -4,3 +4,5 @@ ed_key*
 dgpu*
 __pycache__/
 
+next-byte-app/nb-frontend/node_modules
+
