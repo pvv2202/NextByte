@@ -43,14 +43,14 @@ def generate_recipe():
     directions = output[ingredients_end + len("<end_ingredients>"):directions_end].strip()
 
     # Clean up spaces before punctuation
-    title = re.sub(r'\s+([.,!?;:])', r'\1', title)
+    title = re.sub(r'\s+([.,!?;:])', r'\1', title).strip().capitalize()
     ingredients = re.sub(r'\s+([.,!?;:])', r'\1', ingredients)
     directions = re.sub(r'\s+([.,!?;:])', r'\1', directions)
 
     # Split ingredients on comma followed by a digit
     ingredients = [i.strip() for i in re.split(r',\s*(?=\d)', ingredients) if i.strip()]
-    directions = [s.strip() for s in directions.split('.') if s.strip()]
-    
+    directions = [s.strip().capitalize() for s in directions.split('.') if s.strip()]
+# ...existing code...
     # we return it as a dictionary as well
     return {'recipe': {
         'title': title,

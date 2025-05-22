@@ -14,8 +14,8 @@ function RecipeDisplay({recipe, setRecipe}) {
   }
   
   return (
-    <div className='w-full flex flex-col bg-white p-10 rounded shadow-md'>
-        <div className='flex justify-between h-10'>
+    <div className='w-full flex flex-col bg-white p-8 rounded shadow-md'>
+        <div className='flex justify-between'>
           <h2 className='text-2xl'>
             <TypeAnimation 
               sequence={[title, 1000]} 
@@ -27,7 +27,7 @@ function RecipeDisplay({recipe, setRecipe}) {
         </div>
         
         <h2 className='text-xl mt-2 mb-2'>Ingredients:</h2>
-        <ul className='list-disc'>
+        <ul className='ml-4 list-disc'>
           {ingredients.map((ing, idx)=>(
             <li key={idx}>
               <TypeAnimation 
@@ -39,7 +39,7 @@ function RecipeDisplay({recipe, setRecipe}) {
           ))}
         </ul>
         <h2 className='text-xl mt-2 mb-2'>Directions</h2>
-        <ol className='list-decimal'>
+        <ol className='ml-4 list-decimal'>
           {directions.map((dir, idx)=>(
             <li key={idx}>
               <TypeAnimation 
