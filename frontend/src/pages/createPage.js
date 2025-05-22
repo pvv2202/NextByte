@@ -10,7 +10,7 @@ function CreatePage() {
   // use form is from a react library helpful for managing form validation and setup https://react-hook-form.com/get-started
   const {register, handleSubmit, reset} = useForm()
   const [generating, setGenerating] = useState(false)
-  const [recipe, setRecipe] = useState('')
+  const [recipe, setRecipe] = useState(null)
 
   // this will eventually request the server that the model lives on
   const onSubmit = async (data) => {
@@ -24,11 +24,12 @@ function CreatePage() {
       {recipeTitle:recipeTitle}
     )
     setGenerating(false)
+
     setRecipe(recipe['recipe'])
   }
 
   return (
-    <div className='relative flex flex-col py-20 w-full h-screen gap-y-20 items-center bg-gray-200'>
+    <div className='relative flex flex-col py-20 w-full min-h-screen gap-y-20 items-center bg-gray-200'>
       <Typewriter 
         sequence={[
           "Next Bite",
@@ -43,7 +44,6 @@ function CreatePage() {
         recipe={recipe}
         setRecipe={setRecipe}
       />
-      {recipe !== '' ? <button onClick={() => setRecipe('')}>Delete</button> : ''}
       <RecipeForm
         register={register}
         handleSubmit={handleSubmit}

@@ -7,13 +7,13 @@ function CreateDisplay({generating, recipe, setRecipe}) {
     let content;
     if (generating){
         content = <CookingAnimation />
-    } else if (recipe != ''){
+    } else if (recipe != null){
         content = <RecipeDisplay recipe={recipe} setRecipe={setRecipe}/>
     } else {
         content = <NextByteBot />
     }
     return (
-    <div className='flex justify-center'>
+    <div className='flex justify-center w-3/4'>
         {content}
     </div>
     )
