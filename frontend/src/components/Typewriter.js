@@ -1,7 +1,7 @@
 import React from 'react'
 import { TypeAnimation } from 'react-type-animation'
 
-function Typewriter({sequence, speed}) {
+function Typewriter({sequence, speed, repeat=0}) {
 
   return (
     <TypeAnimation
@@ -9,6 +9,8 @@ function Typewriter({sequence, speed}) {
       wrapper="div"
       speed={speed}
       className="text-4xl font-mono"
+      repeat={repeat}
+      cursor={false}
       />
   )
 }

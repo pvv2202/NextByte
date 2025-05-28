@@ -38,6 +38,7 @@ function CreatePage() {
           5000
         ]}
         speed={10}
+        
       />
       <CreateDisplay
         generating={generating}

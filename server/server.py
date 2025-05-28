@@ -50,7 +50,7 @@ def generate_recipe():
     # Split ingredients on comma followed by a digit
     ingredients = [i.strip() for i in re.split(r',\s*(?=\d)', ingredients) if i.strip()]
     directions = [s.strip().capitalize() for s in directions.split('.') if s.strip()]
-# ...existing code...
+
     # we return it as a dictionary as well
     return {'recipe': {
         'title': title,

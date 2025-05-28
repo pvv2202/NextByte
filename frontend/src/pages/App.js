@@ -8,7 +8,7 @@ import SidebarBtn from '../components/sidebarBtn';
 /* First functional component */ 
 function App() {
   // most used react hook -> allows you to track and update any variable 
-  const [sidebarHidden, setSidebarHidden] = useState(true)
+  const [sidebarHidden, setSidebarHidden] = useState(false)
 
   return (
     // im using tailwind-css extension to style quicker, these random looking strings correspond to css styles
