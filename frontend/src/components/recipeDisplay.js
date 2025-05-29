@@ -1,8 +1,11 @@
-import React from 'react'
+import { useState } from 'react';
 import { TypeAnimation } from 'react-type-animation'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBookmark as faBookmarkSolid } from '@fortawesome/free-solid-svg-icons';
+import { faBookmark as faBookmarkRegular } from '@fortawesome/free-regular-svg-icons';
 
 function RecipeDisplay({recipe, setRecipe}) {
-  
+  const [saved, setSaved] = useState(false)
   let title = '';
   let ingredients = [];
   let directions = [];
@@ -18,32 +21,42 @@ function RecipeDisplay({recipe, setRecipe}) {
         <div className='flex justify-between'>
           <h2 className='text-2xl'>
             <TypeAnimation 
-              sequence={[title, 1000]} 
+              sequence={[title]} 
               speed={50}
               cursor={false}
             />
           </h2>
-          <img src="nextbyte.png" className='w-10 object-contain' alt="nextbyte" />
+          <button className='hover:scale-105' onClick={() => setSaved(s => !s)}>
+            {saved ? <FontAwesomeIcon icon={faBookmarkSolid} /> : <FontAwesomeIcon icon={faBookmarkRegular}/> }  
+          </button>
+          
         </div>
-        
-        <h2 className='text-xl mt-2 mb-2'>Ingredients:</h2>
+
         <ul className='ml-4 list-disc'>
           {ingredients.map((ing, idx)=>(
             <li key={idx}>
               <TypeAnimation 
-                sequence={[ing, 1000]}
+                sequence={[500, ing]}
                 speed={50}
                 cursor={false}
               />
             </li>
           ))}
         </ul>
-        <h2 className='text-xl mt-2 mb-2'>Directions</h2>
+        
+        <h2 className='text-xl mt-2 mb-2'>
+          <TypeAnimation 
+            sequence={[2000, "Directions"]}
+            speed={50}
+            cursor={false}
+          />
+        </h2>
+        
         <ol className='ml-4 list-decimal'>
           {directions.map((dir, idx)=>(
             <li key={idx}>
               <TypeAnimation 
-                sequence={[dir, 1000]}
+                sequence={[3000, dir]}
                 speed={50}
                 cursor={false}
               />
@@ -51,8 +64,10 @@ function RecipeDisplay({recipe, setRecipe}) {
           ))}
         </ol>
         <div className='flex justify-end'>
-          {recipe !== null ? <button className='w-1/4 mt-2 hover:scale-105 text-white rounded bg-gray-800' onClick={() => setRecipe(null)}>Delete</button> : ''}
+          {recipe !== null ? <button className='w-1/4 mt-2 hover:scale-105 text-white rounded bg-gray-800' onClick={() => setRecipe(null)}>Clear</button> : ''}
         </div>
+        
+        
     </div>
   )
 }
