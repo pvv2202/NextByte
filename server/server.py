@@ -29,7 +29,7 @@ def generate_recipe():
     data = request.get_json()
     recipe_title = data.get('recipeTitle')
     output = model.generate_recipe(
-        input_text=recipe_title,
+        input_text=f"<start_title>{recipe_title}<end_title>",
         max_new_tokens=500,
         top_k=10,
         context_length=768
@@ -39,9 +39,9 @@ def generate_recipe():
     ingredients_end = output.find("<end_ingredients>")
     directions_end = output.find("<end>")
 
-    title = output[:title_end].strip()
-    ingredients = output[title_end + len("<end_title>"):ingredients_end].strip()
-    directions = output[ingredients_end + len("<end_ingredients>"):directions_end].strip()
+    title = output[len("<start_title>"):title_end].strip()
+    ingredients = output[title_end + len("<end_title> <start_ingredients>"):ingredients_end].strip()
+    directions = output[ingredients_end + len("<end_ingredients> <start_directions>"):directions_end].strip()
 
     # Clean up spaces before punctuation
     title = re.sub(r'\s+([.,!?;:])', r'\1', title).strip().capitalize()
