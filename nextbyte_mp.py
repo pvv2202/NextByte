@@ -68,7 +68,7 @@ for batch in train_dataloader:
     break
 
 # # TODO: explain what this is
-optimizer = AdamW(model.parameters(), lr=lr)
+optimizer = AdamW(model.parameters(), lr=lr, eps=1e-7) # Need to adjust eps to this or you get NaN
 
 model.to(device)
 

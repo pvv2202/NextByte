@@ -5,16 +5,16 @@ from transformers import PreTrainedTokenizerFast
 
 def init_next_byte():
     # model params
-    vocab_size=20000
-    context_length = 512
-    d_model = 512
+    vocab_size=30000
+    context_length = 768
+    d_model = 768
     num_heads = 8
     num_hidden_layers = 8
-    d_hidden = 2048
-    num_decoders = 2
+    d_hidden = 3072
+    num_decoders = 6
 
     tokenizer = PreTrainedTokenizerFast.from_pretrained(
-        Path("./model_code/title_to_all_tokenizer")
+        Path("../Tokenizers/nextbyte_tokenizer")
     )
     tokenizer.eos_token_id = tokenizer.convert_tokens_to_ids("<end>")
 
@@ -31,7 +31,7 @@ def init_next_byte():
 
     # load in weights
     model.load_state_dict(
-        torch.load(Path("./model_code/all.pth"), map_location=torch.device('cpu'))
+        torch.load(Path("../Models/nextbyte_6.pth"), map_location=torch.device('cpu'))
     )
 
     return model

@@ -53,8 +53,6 @@ function RecipeDisplay({recipe, setRecipe}) {
         <div className='flex justify-end'>
           {recipe !== null ? <button className='w-1/4 mt-2 hover:scale-105 text-white rounded bg-gray-800' onClick={() => setRecipe(null)}>Delete</button> : ''}
         </div>
-        
-        
     </div>
   )
 }

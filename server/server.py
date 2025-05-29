@@ -16,6 +16,7 @@ CORS(app, origins=[
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://192.168.2.109:3000"
+    "http://10.0.0.84:3000"
 ], supports_credentials=True)
 
 # get our model up in here
@@ -29,14 +30,14 @@ def generate_recipe():
     recipe_title = data.get('recipeTitle')
     output = model.generate_recipe(
         input_text=recipe_title,
-        max_new_tokens=400,
+        max_new_tokens=500,
         top_k=10,
-        context_length=512
+        context_length=768
     )
     
-    title_end = output.index("<end_title>")
-    ingredients_end = output.index("<end_ingredients>")
-    directions_end = output.index("<end>")
+    title_end = output.find("<end_title>")
+    ingredients_end = output.find("<end_ingredients>")
+    directions_end = output.find("<end>")
 
     title = output[:title_end].strip()
     ingredients = output[title_end + len("<end_title>"):ingredients_end].strip()
