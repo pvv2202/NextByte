@@ -1,4 +1,3 @@
-import React from 'react'
 import { useState } from 'react';
 import { TypeAnimation } from 'react-type-animation'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
