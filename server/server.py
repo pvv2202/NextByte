@@ -29,7 +29,7 @@ def generate_recipe():
     data = request.get_json()
     recipe_title = data.get('recipeTitle')
     output = model.generate_recipe(
-        input_text=f"<start_title>{recipe_title}<end_title>",
+        input_text=f"<start_title>{recipe_title}",
         max_new_tokens=500,
         top_k=10,
         context_length=768
@@ -51,7 +51,7 @@ def generate_recipe():
     # Split ingredients on comma followed by a digit
     ingredients = [i.strip() for i in re.split(r',\s*(?=\d)', ingredients) if i.strip()]
     directions = [s.strip().capitalize() for s in directions.split('.') if s.strip()]
-    # ...existing code...
+   
     # we return it as a dictionary as well
     return {'recipe': {
         'title': title,

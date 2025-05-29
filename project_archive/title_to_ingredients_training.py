@@ -14,7 +14,7 @@ from pathlib import Path
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 from recipe_nlg import TokenizedRecipeNLGDataset
-from Save_Results import save_results
+from project_archive.Save_Results import save_results
 
 """Model & training hyper parameters"""
 context_length = 512
@@ -33,7 +33,7 @@ print(device)
 loss_fn = nn.CrossEntropyLoss()
 
 # set mode and tokenizer path
-mode = 'title_to_all'
+mode = 'title_to_ingredients'
 tokenizer_path = Path('Tokenizers/' + mode + '_tokenizer')
 
 print('loading tokenizer')
@@ -50,9 +50,9 @@ train_df, temp_df = train_test_split(df, test_size=0.3, random_state=42)
 eval_df, test_df = train_test_split(temp_df, test_size=0.5, random_state=42)
 
 print('creating datasets..')
-train_dataset = TokenizedRecipeNLGDataset(df=train_df, tokenizer=tokenizer, mode='all')
-eval_dataset = TokenizedRecipeNLGDataset(df=eval_df, tokenizer=tokenizer, mode='all')
-test_dataset = TokenizedRecipeNLGDataset(df=test_df, tokenizer=tokenizer, mode='all')
+train_dataset = TokenizedRecipeNLGDataset(df=train_df, tokenizer=tokenizer, mode='title_to_ingredients')
+eval_dataset = TokenizedRecipeNLGDataset(df=eval_df, tokenizer=tokenizer, mode='title_to_ingredients')
+test_dataset = TokenizedRecipeNLGDataset(df=test_df, tokenizer=tokenizer, mode='title_to_ingredients')
 
 print('creating model..')
 # declare model
@@ -114,9 +114,8 @@ def evaluate_model(model, dataloader, device):
     avg_loss = total_loss / len(dataloader)
     f1 = f1_score(y_true=labels.detach().cpu().numpy(), y_pred=predictions.detach().cpu().numpy(), average='micro')
     acc = metric.compute()
-    
-    return f1, acc, avg_loss
 
+    return f1, acc, avg_loss
 
 
 results = {
@@ -128,9 +127,8 @@ results = {
     'eval_f1': [],
     'test_acc': 0,
     'test_loss': 0,
-    'test_f1': 0   
+    'test_f1': 0
 }
-
 
 model.train()
 for epoch in range(num_epochs):
@@ -146,7 +144,7 @@ for epoch in range(num_epochs):
         labels = labels.view(-1)  # (b * seq)
         # cross entropy handles the softmax part
         loss = loss_fn(logits, labels)
-        
+
         # add loss to within epoch list
         epoch_loss.append(loss.detach())
 
@@ -156,26 +154,26 @@ for epoch in range(num_epochs):
         lr_scheduler.step()
         optimizer.zero_grad()
 
-     # evaluation after every epoch
+    # evaluation after every epoch
     # stacks losses of all batches into a num_batches x 1 tensor, gets mean, and converts to py float
     avg_loss_per_epoch = np.mean([loss.cpu().item() for loss in epoch_loss])
-    
+
     print("TRAIN METRICS")
-    f1_t, acc_t, _ = evaluate_model(model, train_dataloader, device=device) # returns f1, acc, avg_loss in that order
+    f1_t, acc_t, _ = evaluate_model(model, train_dataloader, device=device)  # returns f1, acc, avg_loss in that order
     print(f"F1: {f1_t}")
     print(f"Acc: {acc_t}")
     print(f"Avg Loss: {avg_loss_per_epoch}")
     # keep track of per epoch accuracy/f1/loss on train and eval sets
     results['train_f1'].append(f1_t)
     results['train_acc'].append(acc_t)
-    results['train_loss'].append(avg_loss_per_epoch) # avg training loss/epoch
-    
+    results['train_loss'].append(avg_loss_per_epoch)  # avg training loss/epoch
+
     print("EVAL METRICS")
     f1_e, acc_e, loss_e = evaluate_model(model, eval_dataloader, device=device)
     print(f"F1: {f1_e}")
     print(f"Acc: {acc_e}")
     print(f"Avg Loss: {loss_e}")
-   
+
     results['eval_f1'].append(f1_e)
     results['eval_acc'].append(acc_e)
     results['eval_loss'].append(loss_e)
@@ -188,6 +186,6 @@ results['test_acc'] = acc_test
 results['test_f1'] = f1_test
 results['test_loss'] = loss_test
 
-save_results(results, model_mode='all')
+save_results(results, model_mode='title_to_ingredients')
 
-torch.save(model.state_dict(), "./Models/all.pth")
+torch.save(model.state_dict(), "./Models/title_to_ingredients.pth")
