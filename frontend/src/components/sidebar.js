@@ -2,13 +2,14 @@ import { faBook, faGear, faKitchenSet, faUserGroup } from '@fortawesome/free-sol
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import React from 'react'
 import { useState, useEffect } from 'react';
+import SidebarBtn from './sidebarBtn';
 
 function Sidebar({sidebarHidden}) {
 
 
     return (
-        <div className={`sidebar text-white transition-transform duration-100 ease-in-out fixed top-0 left-0 h-screen w-40 p-2 bg-gray-800 ${sidebarHidden ?'-translate-x-full': 'translate-x-0'}`}>
-            
+
+        <div className={`sidebar text-white transition-transform duration-100 ease-in-out fixed top-0 left-0 h-screen w-40 p-2 bg-sky-950 ${sidebarHidden ?'-translate-x-full': 'translate-x-0'}`}>
             <h2 className='font-semibold text-lg'>NextByte</h2>
             <ul className='flex flex-col relative top-8 gap-y-4 w-full '>
                 <li className='flex gap-x-2 items-center'>
@@ -25,6 +26,8 @@ function Sidebar({sidebarHidden}) {
                 </li>
             </ul>
         </div>
+        
+
     )
 }
 

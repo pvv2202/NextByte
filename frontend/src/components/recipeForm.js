@@ -10,7 +10,7 @@ function RecipeForm({register, handleSubmit, onSubmit}) {
                 placeholder='Your recipe title...'
                 className='p-2 rounded '
             />
-            <button type='submit' className='rounded curser:hand hover:scale-105 text-white  ml-3 p-2 bg-gray-800'>Chef up</button>
+            <button type='submit' className='rounded curser:hand hover:scale-105 text-white  ml-3 p-2 bg-sky-950'>Chef up</button>
         </form>
     )
 }

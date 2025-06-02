@@ -4,6 +4,8 @@ from pathlib import Path
 from model_code.init_model import init_next_byte
 import re
 
+from db_con import pool
+
 """NOT MUCH HERE YET BUT..."""
 
 """ 
@@ -58,3 +60,16 @@ def generate_recipe():
         'ingredients': ingredients,
         'directions': directions
     }}
+    
+@app.route('/api/login', methods=['POST'])
+def login():
+    user_data = request.get_json()
+    username = user_data['username']
+    conn = pool.get_connection()
+    if conn.is_connected():
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(f"SELECT * FROM Users WHERE username = {username}")
+        user = cursor.fetchone()
+        print(user)
+        
+    

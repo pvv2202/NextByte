@@ -29,7 +29,7 @@ function CreatePage() {
   }
 
   return (
-    <div className='relative flex flex-col py-20 w-full min-h-screen gap-y-20 items-center bg-gray-200'>
+    <div className='relative flex flex-col py-20 w-full min-h-screen gap-y-20 items-center bg-amber-200'>
       <Typewriter 
         sequence={[
           "Next Bite",

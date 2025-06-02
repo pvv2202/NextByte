@@ -8,7 +8,7 @@ function Typewriter({sequence, speed}) {
       sequence={sequence}
       wrapper="div"
       speed={speed}
-      className="text-4xl font-mono"
+      className="text-4xl font-mono text-sky-950"
       />
   )
 }
