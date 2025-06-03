@@ -3,8 +3,7 @@ from flask_cors import CORS
 from pathlib import Path
 from model_code.init_model import init_next_byte
 import re
-
-from nextbytedb import MySQLNextByteDB
+from server.db import MySQLNextByteDB
 
 """NOT MUCH HERE YET BUT..."""
 
