@@ -4,7 +4,7 @@ from pathlib import Path
 from model_code.init_model import init_next_byte
 import re
 
-from db_con import pool
+from nextbytedb import MySQLNextByteDB
 
 """NOT MUCH HERE YET BUT..."""
 
@@ -13,16 +13,19 @@ flask simplifies setting up api routes, here I just instantiate the app server,
 enable cross referencing (allowing the server to admit http requests from other domains/ports),
 load the model in, and define the generate recipe route
 """
+
 app = Flask(__name__)
 CORS(app, origins=[
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://192.168.2.109:3000"
+    "http://192.168.2.109:3000",
     "http://10.0.0.84:3000"
 ], supports_credentials=True)
 
 # get our model up in here
 model = init_next_byte()
+
+db = MySQLNextByteDB()
 
 # post requests are usually used to submit new data to be stored in a db
 @app.route('/api/generate-recipe', methods=['POST'])
@@ -71,5 +74,9 @@ def login():
         cursor.execute(f"SELECT * FROM Users WHERE username = {username}")
         user = cursor.fetchone()
         print(user)
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
         
     

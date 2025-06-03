@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import {useForm} from 'react-hook-form'
 import RecipeForm from '../components/recipeForm'
 import CreateDisplay from '../components/createDisplay'
-import Typewriter from '../components/Typewriter'
+import { TypeAnimation } from 'react-type-animation'
 import { api_request } from '../api_request'
 
 
@@ -30,14 +30,17 @@ function CreatePage() {
 
   return (
     <div className='relative flex flex-col py-20 w-full min-h-screen gap-y-20 items-center bg-amber-200'>
-      <Typewriter 
+      <TypeAnimation
         sequence={[
-          "Next Bite",
-          2000,
-          "NextByte",
-          5000
-        ]}
+            "Next Bite",
+            2000,
+            "NextByte",
+            5000
+          ]}
+        wrapper="div"
         speed={10}
+        cursor={false}
+        className="text-4xl font-mono text-sky-950 text-shadow-lg"
       />
       <CreateDisplay
         generating={generating}

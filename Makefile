@@ -1,9 +1,7 @@
 backend:
-	cd server && python3 -m venv venv && \
-	source venv/bin/activate && \
-	export FLASK_APP=server.py && \
-	export FLASK_ENV=development && \
-	flask run
+	cd server && \
+	python3 -m venv venv &&  source venv/bin/activate && \
+	python3 server.py
 
 react-app:
 	cd frontend &&\
