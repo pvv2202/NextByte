@@ -117,7 +117,25 @@ class NextByteTransformer(nn.Module):
                     break
 
         # Return as text and don't skip special tokens
-        return NextByteTransformer.clean_text(self.tokenizer.decode(generated[0], skip_special_tokens=False))
+        output = NextByteTransformer.clean_text(self.tokenizer.decode(generated[0], skip_special_tokens=False))
+        title_end = output.find("<end_title>")
+        ingredients_end = output.find("<end_ingredients>")
+        directions_end = output.find("<end>")
+
+        title = output[len("<start_title>"):title_end].strip()
+        ingredients = output[title_end + len("<end_title> <start_ingredients>"):ingredients_end].strip()
+        directions = output[ingredients_end + len("<end_ingredients> <start_directions>"):directions_end].strip()
+
+        # Clean up spaces before punctuation
+        title = re.sub(r'\s+([.,!?;:])', r'\1', title).strip().capitalize()
+        ingredients = re.sub(r'\s+([.,!?;:])', r'\1', ingredients)
+        directions = re.sub(r'\s+([.,!?;:])', r'\1', directions)
+
+        # Split ingredients on comma followed by a digit
+        ingredients = [i.strip() for i in re.split(r',\s*(?=\d)', ingredients) if i.strip()]
+        directions = [s.strip().capitalize() for s in directions.split('.') if s.strip()]
+        
+        return title, ingredients, directions
     
     @staticmethod 
     def clean_text(text):

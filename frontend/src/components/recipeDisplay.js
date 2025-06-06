@@ -17,7 +17,7 @@ function RecipeDisplay({recipe, setRecipe}) {
   }
   
   return (
-    <div className='w-full flex flex-col bg-white p-8 rounded shadow-md'>
+    <div className='w-full flex flex-col bg-white p-8 rounded-xl shadow-md'>
         <div className='flex gap-1 justify-between'>
           <h2 className='text-2xl'>
             <TypeAnimation 

@@ -9,13 +9,18 @@ export const api_request = async (endpoint, method, headers, body) => {
         headers: {...headers},
         body: JSON.stringify(body)
       })
-
-      if (!response.ok) throw new Error('error fetching data')
+      if (!response.ok) {
+        let errorMsg = 'Error fetching data'; 
+        const errData = await response.json();
+        errorMsg = errData.error
+        throw new Error(errorMsg);
+      }
+      
       const data = await response.json();
       
       return data
 
     } catch(err) {
-      console.log(`Error during fetch: ${err}`)
+      throw err
     }
   }

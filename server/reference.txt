@@ -1,0 +1,2 @@
+CLI cmmand for setting up backend -> EC2 -> Database connection (must be done before testing)
+ssh -i real-nb-key.pem -L 3306:nextbyte-db.ctuise48qz1d.us-east-2.rds.amazonaws.com:3306 ubuntu@ec2-18-116-27-175.us-east-2.compute.amazonaws.com

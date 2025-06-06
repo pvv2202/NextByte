@@ -3,7 +3,8 @@ from flask_cors import CORS
 from pathlib import Path
 from model_code.init_model import init_next_byte
 import re
-from server.db import MySQLNextByteDB
+from db import MySQLNextByteDB
+import datetime
 
 """NOT MUCH HERE YET BUT..."""
 
@@ -24,6 +25,7 @@ CORS(app, origins=[
 # get our model up in here
 model = init_next_byte()
 
+# init database/connection pool
 db = MySQLNextByteDB()
 
 # post requests are usually used to submit new data to be stored in a db
@@ -32,30 +34,14 @@ def generate_recipe():
     # extracts the json from the body of the request
     data = request.get_json()
     recipe_title = data.get('recipeTitle')
-    output = model.generate_recipe(
+    title, ingredients, directions = model.generate_recipe(
         input_text=f"<start_title>{recipe_title}",
         max_new_tokens=500,
         top_k=10,
         context_length=768
     )
     
-    title_end = output.find("<end_title>")
-    ingredients_end = output.find("<end_ingredients>")
-    directions_end = output.find("<end>")
 
-    title = output[len("<start_title>"):title_end].strip()
-    ingredients = output[title_end + len("<end_title> <start_ingredients>"):ingredients_end].strip()
-    directions = output[ingredients_end + len("<end_ingredients> <start_directions>"):directions_end].strip()
-
-    # Clean up spaces before punctuation
-    title = re.sub(r'\s+([.,!?;:])', r'\1', title).strip().capitalize()
-    ingredients = re.sub(r'\s+([.,!?;:])', r'\1', ingredients)
-    directions = re.sub(r'\s+([.,!?;:])', r'\1', directions)
-
-    # Split ingredients on comma followed by a digit
-    ingredients = [i.strip() for i in re.split(r',\s*(?=\d)', ingredients) if i.strip()]
-    directions = [s.strip().capitalize() for s in directions.split('.') if s.strip()]
-    # ...existing code...
     # we return it as a dictionary as well
     return {'recipe': {
         'title': title,
@@ -65,15 +51,46 @@ def generate_recipe():
     
 @app.route('/api/login', methods=['POST'])
 def login():
+    print('login route')
     user_data = request.get_json()
     username = user_data['username']
-    conn = pool.get_connection()
-    if conn.is_connected():
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute(f"SELECT * FROM Users WHERE username = {username}")
-        user = cursor.fetchone()
-        print(user)
+    password = user_data['password']
+    # find the user if present in db
+    user = db.execute_query(f'SELECT * FROM Users WHERE username = %s', (username,))
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
 
+    # TODO: change with hashed password after creating signup
+    if user['password'] != password:
+        return jsonify({'error' : f'Incorrect Password'}), 401
+    
+    return jsonify({'msg': 'OK'}), 200
+
+@app.route('/api/signup', methods=['POST'])
+def signup():
+    print('in signup')
+    data = request.get_json()
+    username, password, email = data['username'], data['password'], data['email']
+    city, state, country = data['city'], data['state'], data['country']
+    date_created = datetime.now().strftime('%Y-%m-%d')
+    
+    if db.execute_query(f'SELECT * FROM Users WHERE username = %s', (username,)):
+        # 409 for conflict 
+        return jsonify({'error': 'Username is taken'}), 409
+    
+    query = f"""
+    INSERT INTO Users
+    (username, password, email, date_created, city, state, country)
+    VALUES(%s, %s, %s, %s, %s, %s, %s)
+    """
+    
+    db.execute_query(query,(username, password, email, date_created, city, state, country))
+    
+    return jsonify({'msg': 'OK'}), 201
+    
+    
+   
+    
 
 if __name__ == "__main__":
     app.run(debug=True)
