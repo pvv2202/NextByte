@@ -19,7 +19,7 @@ function App() {
     // ie w-screen = width: 100vw (div total width of screen), p-0 (0 padding between div and children) 
     <div className="app flex w-screen min-h-screen bg-green-200 p-0">
       <Routes>
-        <Route path='/' element={<Navigate to='/login' />} />
+        <Route path='/' element={<Navigate to='/signup' />} />
         <Route path='/login' element={<Login />} />
         <Route path='signup' element={<SignUp />} />
         <Route path='/workspace' element={

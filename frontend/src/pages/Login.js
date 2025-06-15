@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form';
 import { api_request } from '../api_request';
-import LoginForm from '../components/loginForm';
+import LoginForm from '../components/auth/loginForm';
 import { useNavigate} from 'react-router';
 
 function Login() {

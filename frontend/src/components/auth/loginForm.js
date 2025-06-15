@@ -1,9 +1,9 @@
 import React from 'react'
 import { ClipLoader } from 'react-spinners'
-import { PulseDiv } from './bot'
+import { PulseDiv } from '../bot'
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { api_request } from '../api_request';
+import { api_request } from '../../api_request';
 import { Navigate, useNavigate } from 'react-router';
 
 function LoginForm({handleSubmit, onSubmit, register, authenticating, userError, pwdError}) {
@@ -17,13 +17,13 @@ function LoginForm({handleSubmit, onSubmit, register, authenticating, userError,
                 </PulseDiv>
             </h2>
             {{userError} ? <p className='text-red-600 ml-2'>{userError}</p> : null}
-            <input type='text' {...register("username", {required: true,
+            <input type='text' autoComplete='off' {...register("username", {required: true,
                 maxLength: 20})} 
                 placeholder='Username'
                 className='p-2 rounded'
             />
             {{pwdError} ? <p className='text-red-600 ml-2'>{pwdError}</p> : null}
-            <input type="text" {...register("password", {required: true, 
+            <input type="password" autoComplete='off' {...register("password", {required: true, 
                 maxLength:20})}
                 placeholder='Password'
                 className='p-2 rounded' 
@@ -33,7 +33,7 @@ function LoginForm({handleSubmit, onSubmit, register, authenticating, userError,
                     {authenticating ? <ClipLoader color={'white'} speedMultiplier={0.5} size={20} /> : <p>Login</p>}
                 </button>
             </div>
-           <button onClick={() => navigate('/signup')}>New User? Sign up heres</button>
+           <button onClick={() => navigate('/signup')}>New User? Sign up here</button>
         </form>
     )
 }

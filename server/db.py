@@ -1,30 +1,19 @@
-import mysql.connector
-from mysql.connector import pooling
+import sqlite3
+from dbutils.pooled_db import PooledDB
 
-class MySQLNextByteDB:
+class SqliteNextByteDB:
     def __init__(self):
-        print('connecting to aws database: nextbytedb')
-        self.config = { 
-            "host": '127.0.0.1',
-            "user": 'admin',
-            "password": 'Fp$SJE2021g',
-            "database": 'nextbytedb',
-            "port": 3306
-        }
-        self.pool_name = 'nb-pool'
-        self.pool_size = 1
-        self.pool = pooling.MySQLConnectionPool(
-            pool_name=self.pool_name,
-            pool_size=self.pool_size,
-            **self.config
-        )
+        print('setting up pool')
+        self.pool = PooledDB(sqlite3, maxconnections=10, mincached=2, maxcached=5, 
+                             blocking=True, database='nb.db', check_same_thread=False)
+       
 
     def get_connection(self):
-        return self.pool.get_connection()
+        return self.pool.connection()
 
     def execute_query(self, query, params=None):
         conn = self.get_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor()
         if params:
             cursor.execute(query, params)
         else:
@@ -34,6 +23,19 @@ class MySQLNextByteDB:
         cursor.close()
         conn.close()
         return result
+    
+    def insert(self, query, params=None):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        if params:
+            cursor.execute(query, params)
+        else:
+            cursor.execute(query)
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+       
         
         
     
@@ -43,10 +45,6 @@ class MySQLNextByteDB:
 
 
     
-    # cnx = mysql.connector.connect(pool_name='nb-pool')
-    # cursor = cnx.cursor()
-    # cursor.execute("SELECT * FROM Users")
-    # row = cursor.fetchone()
-    # print(row)
+  
     
     

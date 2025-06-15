@@ -3,8 +3,9 @@ from flask_cors import CORS
 from pathlib import Path
 from model_code.init_model import init_next_byte
 import re
-from db import MySQLNextByteDB
-import datetime
+from db import SqliteNextByteDB
+from datetime import datetime
+from werkzeug.security import check_password_hash, generate_password_hash
 
 """NOT MUCH HERE YET BUT..."""
 
@@ -15,18 +16,13 @@ load the model in, and define the generate recipe route
 """
 
 app = Flask(__name__)
-CORS(app, origins=[
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://192.168.2.109:3000",
-    "http://10.0.0.84:3000"
-], supports_credentials=True)
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
 # get our model up in here
 model = init_next_byte()
 
 # init database/connection pool
-db = MySQLNextByteDB()
+db = SqliteNextByteDB()
 
 # post requests are usually used to submit new data to be stored in a db
 @app.route('/api/generate-recipe', methods=['POST'])
@@ -56,12 +52,13 @@ def login():
     username = user_data['username']
     password = user_data['password']
     # find the user if present in db
-    user = db.execute_query(f'SELECT * FROM Users WHERE username = %s', (username,))
+    user = db.execute_query(f'SELECT * FROM Users WHERE username = ?', (username,))
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
     # TODO: change with hashed password after creating signup
-    if user['password'] != password:
+   
+    if not check_password_hash(user[2], password):
         return jsonify({'error' : f'Incorrect Password'}), 401
     
     return jsonify({'msg': 'OK'}), 200
@@ -70,27 +67,28 @@ def login():
 def signup():
     print('in signup')
     data = request.get_json()
-    username, password, email = data['username'], data['password'], data['email']
+    username, age, email = data['username'], data['age'], data['email']
     city, state, country = data['city'], data['state'], data['country']
     date_created = datetime.now().strftime('%Y-%m-%d')
+    # encrypt password
+    password = generate_password_hash(data['password'])
     
-    if db.execute_query(f'SELECT * FROM Users WHERE username = %s', (username,)):
+    if db.execute_query(f'SELECT * FROM Users WHERE username = ?', (username,)):
         # 409 for conflict 
         return jsonify({'error': 'Username is taken'}), 409
     
+   
     query = f"""
     INSERT INTO Users
-    (username, password, email, date_created, city, state, country)
-    VALUES(%s, %s, %s, %s, %s, %s, %s)
+    (username, password, age, email, date_created, city, state, country)
+    VALUES(?, ?, ?, ?, ?, ?, ?, ?)
     """
     
-    db.execute_query(query,(username, password, email, date_created, city, state, country))
+    db.insert(query, (username, password, age, email, date_created, city, state, country))
     
     return jsonify({'msg': 'OK'}), 201
     
-    
-   
-    
+      
 
 if __name__ == "__main__":
     app.run(debug=True)
