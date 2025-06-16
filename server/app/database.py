@@ -2,10 +2,10 @@ import sqlite3
 from dbutils.pooled_db import PooledDB
 
 class SqliteNextByteDB:
-    def __init__(self):
+    def __init__(self, num_connections=10):
         print('setting up pool')
-        self.pool = PooledDB(sqlite3, maxconnections=10, mincached=2, maxcached=5, 
-                             blocking=True, database='nb.db', check_same_thread=False)
+        self.pool = PooledDB(sqlite3, maxconnections=num_connections, mincached=2, maxcached=5, 
+                             blocking=True, database='./app/nb.db', check_same_thread=False)
        
 
     def get_connection(self):

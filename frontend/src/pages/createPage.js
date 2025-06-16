@@ -18,7 +18,7 @@ function CreatePage() {
     reset();
     const recipeTitle = data['recipeTitle']
     const recipe = await api_request(
-      'generate-recipe',
+      'generate-recipe/',
       'POST',
       {'Content-Type': 'application/json'},
       {recipeTitle:recipeTitle}

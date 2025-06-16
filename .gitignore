@@ -3,6 +3,6 @@ Models/
 ed_key*
 dgpu*
 __pycache__/
-
+.env
 server/model_code/all.pth
 

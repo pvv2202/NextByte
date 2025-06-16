@@ -17,7 +17,7 @@ function Login() {
         setAuthenticating(true)
         try{
             const response = await api_request(
-                'login',
+                'auth/login',
                 'POST',
                 {'Content-Type': 'application/json'},
                 {username: data['username'], password: data['password']}
