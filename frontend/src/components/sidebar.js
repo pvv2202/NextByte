@@ -6,6 +6,7 @@ import Avatar from '@mui/material/Avatar'
 import { useState, useEffect, useContext} from 'react';
 import { UserContext } from '../UserContext';
 import {motion, AnimatePresence} from 'framer-motion'
+import { PulseDiv } from './bot';
 
 
 
@@ -46,7 +47,10 @@ function Sidebar({sidebarHidden}) {
             >
                 <div className='flex flex-col relative gap-y-4 w-full items-center '>
                     <h2 className='font-semibold text-lg text-center'>NextByte</h2>
-                    <Avatar sx={{width: 55, height:55, bgcolor: 'green', color: 'whitesmoke'}}>{user['username'][0].toUpperCase()}</Avatar>      
+                    <PulseDiv>
+                        <Avatar sx={{width: 55, height:55, bgcolor: 'green', color: 'whitesmoke'}}>{user['username'][0].toUpperCase()}</Avatar>      
+                    </PulseDiv>
+                   
                 </div>
                 <ul className='flex flex-col relative top-8 gap-y-8 w-full '>
                     <Link to='my-recipes'>
