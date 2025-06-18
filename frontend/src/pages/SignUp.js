@@ -1,18 +1,24 @@
 import React from 'react'
 import { useNavigate } from 'react-router'
-import { useState } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import SignupForm from '../components/auth/signupForm'
 import { api_request } from '../api_request'
+import { get_user } from '../api_request'
+import { UserContext } from '../UserContext'
 
 function SignUp() {
   const navigate = useNavigate()
   const [authenticating, setAuthenticating] = useState(false)
   const {register, handleSubmit, reset, control, watch} = useForm() 
   const [userError, setUserError] = useState('')
+  const {user, setUser} = useContext(UserContext)
+
+  useEffect(() => {
+          if (user) navigate('/landing')
+  }, [])
   
   const onSubmit = async (data) => {
-      console.log(data)
       setUserError('')
       setAuthenticating(true)
       try{
@@ -30,7 +36,6 @@ function SignUp() {
 
             }
           )
-          // TODO: SET UP USER SESSION?
           navigate('/login')
           
       } catch(err){

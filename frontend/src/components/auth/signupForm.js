@@ -2,13 +2,12 @@ import React from 'react'
 import { ClipLoader } from 'react-spinners'
 import { PulseDiv } from '../bot'
 import { useState } from 'react';
-import { api_request } from '../../api_request';
 import { Navigate, useNavigate } from 'react-router';
 import DropdownMenu from '../dropdown-menu/dropdown'
 import PwdInput from './pwdInput';
-import countries from '../../country-flag.json'
-import states from '../../states.json'
-import cities from '../../cities.json'
+import countries from '../../data/country-flag.json'
+import states from '../../data/states.json'
+import cities from '../../data/cities.json'
 
 
 

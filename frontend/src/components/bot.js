@@ -14,7 +14,7 @@ export const PulseDiv = styled.div`
 function NextByteBot() {
   return (
     <PulseDiv>
-      <img className=' max-w-60 rounded-full border-8 border-sky-200 bg-white p-8 shadow-md ' src={'Closing-eyes.gif'} alt="nextbyte" />
+      <img className=' max-w-60 rounded-full border-8 border-sky-200 bg-white p-8 shadow-md ' src={'../Closing-eyes.gif'} alt="nextbyte" />
     </PulseDiv>
   )
 }

@@ -6,6 +6,7 @@ export const api_request = async (endpoint, method, headers, body) => {
     try{
       const response = await fetch(`${API_URL}/${endpoint}`, {
         method: method,
+        credentials: 'include',
         headers: {...headers},
         body: JSON.stringify(body)
       })
@@ -22,5 +23,19 @@ export const api_request = async (endpoint, method, headers, body) => {
 
     } catch(err) {
       throw err
+    }
+  }
+
+  export const get_user = async () => {
+    try {
+      const userData = await api_request(
+        'auth/@me',
+        'GET'
+      )
+
+      return userData
+
+    } catch (err) {
+      console.log(err)
     }
   }

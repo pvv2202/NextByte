@@ -1,42 +1,53 @@
 import '../App.css';
-import { useState} from 'react';
-// components
-import Workspace from '../components/workspace';
-import Sidebar from '../components/sidebar';
-import SidebarBtn from '../components/sidebarBtn';
+
 import Login from './Login';
-import { Navigate, Route, Routes } from 'react-router';
+import { Navigate, Route, Routes, useNavigate } from 'react-router';
 import SignUp from './SignUp';
+import LandingPage from './landingPage';
+import CreatePage from './createPage';
+import RecipeBook from './recipeBook';
+import Redirect from './redirect';
+import { useState, useContext, useEffect, createContext} from 'react';
+import { get_user } from '../api_request';
+import { UserContext } from '../UserContext';
+
+
 
 /* First functional component */ 
 function App() {
-  // most used react hook -> allows you to track and update any variable 
-  const [sidebarHidden, setSidebarHidden] = useState(false)
-  const [loggedIn, setLoggedIn] = useState(false)
+  const navigate = useNavigate()
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
 
+  useEffect(()=>{
+      async function fetch_user() {
+        setLoading(true)
+        const user = await get_user()
+        setUser(user) 
+        if (!user) navigate('/login')
+        setLoading(false)
+      }
+      fetch_user()
+      
+  }, [])
+  
+  if(loading) return <div>loading...</div>
+  
   return (
-    // im using tailwind-css extension to style quicker, these random looking strings correspond to css styles
-    // ie w-screen = width: 100vw (div total width of screen), p-0 (0 padding between div and children) 
-    <div className="app flex w-screen min-h-screen bg-green-200 p-0">
-      <Routes>
-        <Route path='/' element={<Navigate to='/signup' />} />
-        <Route path='/login' element={<Login />} />
-        <Route path='signup' element={<SignUp />} />
-        <Route path='/workspace' element={
-          <>
-            <Sidebar 
-              sidebarHidden={sidebarHidden}
-              setSidebarHidden={setSidebarHidden}
-            />
-            <SidebarBtn 
-              sidebarHidden={sidebarHidden}
-              setSidebarHidden={setSidebarHidden}
-            />
-            <Workspace sidebarHidden={sidebarHidden}/>
-          </>
-        }/>
-      </Routes> 
-    </div>
+    <UserContext.Provider value={{user, setUser, loading, setLoading}} >
+   
+      <div className="app flex w-screen min-h-screen bg-green-200 p-0">
+        <Routes>
+          <Route path='/' element={<Navigate to='/signup' />} />
+          <Route path='/login' element={<Login/>} />
+          <Route path='/signup' element={<SignUp />} />
+          <Route path='/landing' element={<LandingPage />}>
+              <Route path='' element={<CreatePage />} />
+              <Route path='my-recipes' element={<RecipeBook />} />
+          </Route>
+        </Routes> 
+      </div>
+    </UserContext.Provider>
   );
 }
 
