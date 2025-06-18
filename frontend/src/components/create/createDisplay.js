@@ -1,7 +1,7 @@
 import React from 'react'
-import NextByteBot from './bot'
-import CookingAnimation from './cooking-animation'
-import RecipeDisplay from './recipeDisplay';
+import NextByteBot from '../bot'
+import CookingAnimation from './cooking-animation.js'
+import RecipeDisplay from './recipeDisplay.js';
 
 function CreateDisplay({generating, recipe, setRecipe}) {
     let content;

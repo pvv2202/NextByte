@@ -11,7 +11,7 @@ class SqliteNextByteDB:
     def get_connection(self):
         return self.pool.connection()
 
-    def execute_query(self, query, params=None):
+    def execute_query(self, query, params=None, many=False):
         conn = self.get_connection()
         cursor = conn.cursor()
         if params:
@@ -19,7 +19,11 @@ class SqliteNextByteDB:
         else:
             cursor.execute(query)
         
-        result = cursor.fetchone()
+        if many:
+            result = cursor.fetchall()
+        else:  
+            result = cursor.fetchone()
+        
         cursor.close()
         conn.close()
         return result

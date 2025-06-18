@@ -6,6 +6,7 @@ load_dotenv()
 
 class ApplicationConfig:
     SECRET_KEY = os.environ['SECRETIVE_SECRET']
+    CORS_HEADERS = 'CONTENT-TYPE'
     
     SESSION_TYPE = 'redis'
     SESSION_PERMANENT = False

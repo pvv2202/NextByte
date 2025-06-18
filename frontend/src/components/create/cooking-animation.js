@@ -1,5 +1,5 @@
 import React from 'react'
-import { PulseDiv } from './bot'
+import { PulseDiv } from '../bot.js'
 
 function CookingAnimation() {
   return (

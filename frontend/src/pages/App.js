@@ -1,5 +1,5 @@
 import '../App.css';
-
+import { ClipLoader } from 'react-spinners';
 import Login from './Login';
 import { Navigate, Route, Routes, useNavigate } from 'react-router';
 import SignUp from './SignUp';
@@ -10,6 +10,7 @@ import Redirect from './redirect';
 import { useState, useContext, useEffect, createContext} from 'react';
 import { get_user } from '../api_request';
 import { UserContext } from '../UserContext';
+import FullRecipe from './fullRecipe.js';
 
 
 
@@ -31,7 +32,13 @@ function App() {
       
   }, [])
   
-  if(loading) return <div>loading...</div>
+  if(loading){
+    return (
+        <div className='relative flex flex-col w-full min-h-screen gap-y-20 items-center bg-white'>
+          <ClipLoader color={'black'} speedMultiplier={0.5} size={100} />
+        </div>
+      )
+  } 
   
   return (
     <UserContext.Provider value={{user, setUser, loading, setLoading}} >
@@ -43,7 +50,8 @@ function App() {
           <Route path='/signup' element={<SignUp />} />
           <Route path='/landing' element={<LandingPage />}>
               <Route path='' element={<CreatePage />} />
-              <Route path='my-recipes' element={<RecipeBook />} />
+              <Route path='my-recipes' element={<RecipeBook />}/>
+              <Route path='my-recipes/:recipe_id' element={<FullRecipe />}/> 
           </Route>
         </Routes> 
       </div>

@@ -8,7 +8,7 @@ from .config import ApplicationConfig
 db = SqliteNextByteDB(num_connections=1)
 
 from app.routes.auth import auth
-from app.routes.generate import gen
+from app.routes.recipes import recipes
 
 def create_app():
     app = Flask(__name__)
@@ -19,7 +19,7 @@ def create_app():
     Session(app)
     
     app.register_blueprint(auth)
-    app.register_blueprint(gen)
-    print(app.url_map)
+    app.register_blueprint(recipes)
+   
     
     return app

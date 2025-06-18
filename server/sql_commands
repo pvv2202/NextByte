@@ -1,0 +1,10 @@
+CREATE TABLE Recipes (
+    id INTEGER NOT NULL PRIMARY KEY,
+    title TEXT,
+    ingredients TEXT,
+    directions TEXT,
+    img BLOB,
+    date_created TEXT NOT NULL,
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES Users(id)
+)

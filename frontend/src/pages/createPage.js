@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import {useForm} from 'react-hook-form'
-import RecipeForm from '../components/recipeForm'
-import CreateDisplay from '../components/createDisplay'
+import RecipeForm from '../components/create/recipeForm.js'
+import CreateDisplay from '../components/create/createDisplay.js'
 import { TypeAnimation } from 'react-type-animation'
 import { api_request } from '../api_request'
 
@@ -13,12 +13,13 @@ function CreatePage() {
   const [recipe, setRecipe] = useState(null)
 
   // this will eventually request the server that the model lives on
-  const onSubmit = async (data) => {
+  const generateRecipe = async (data) => {
+    setRecipe(null)
     setGenerating(true)
     reset();
     const recipeTitle = data['recipeTitle']
     const recipe = await api_request(
-      'generate-recipe/',
+      'recipes/generate',
       'POST',
       {'Content-Type': 'application/json'},
       {recipeTitle:recipeTitle}
@@ -29,7 +30,7 @@ function CreatePage() {
   }
 
   return (
-    <div className='relative flex flex-col py-20 w-full min-h-screen gap-y-20 items-center bg-amber-200'>
+    <div className='relative flex flex-col py-20 w-full min-h-screen gap-y-20 items-center bg-white'>
       <TypeAnimation
         sequence={[
             "Next Bite",
@@ -50,7 +51,8 @@ function CreatePage() {
       <RecipeForm
         register={register}
         handleSubmit={handleSubmit}
-        onSubmit={onSubmit} 
+        onSubmit={generateRecipe} 
+        generating={generating}
       />  
     </div>
   )
