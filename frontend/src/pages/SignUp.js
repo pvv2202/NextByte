@@ -23,16 +23,16 @@ function SignUp() {
       setAuthenticating(true)
       try{
           const response = await api_request(
-              'signup',
+              'auth/signup',
               'POST',
               {'Content-Type': 'application/json'},
               {username: data['username'], 
                 password: data['password'],
                 age: data['age'],
-                email: data['email'],
-                country: data['country'],
-                state: data['state'],
-                city: data['city']
+                email: data['email'] || '',
+                country: data['country'] || '',
+                state: data['state'] || '',
+                city: data['city'] || ''
 
             }
           )
